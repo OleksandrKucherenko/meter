@@ -8,7 +8,7 @@ env:
 android:
   components:
     # version 19.1 is already available but it not supported yet by Travis CI yet
-    - build-tools-19.0.3
+    - build-tools-19.1.0
     - android-19
 
 before_script:
