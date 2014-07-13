@@ -1,12 +1,14 @@
-meter
-=====
+# meter
 
 Meter - is a simple micro-benchmarking tool for Android (not only for Android, its actually for any Java project). 
 
 It was designed for Android. Meter try to make measurement an easy task, with minimal impact on total project performance.
 
-Design objectives
-===================
+# State [![Build Status](https://secure.travis-ci.org/OleksandrKucherenko/meter.png?branch=master)](https://travis-ci.org/OleksandrKucherenko/meter)
+
+Active development, started at: 2014-07-13
+
+# Design objectives
 
 * minimalistic code
 * deployment in one file
