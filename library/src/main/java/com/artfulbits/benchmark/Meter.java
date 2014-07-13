@@ -281,12 +281,13 @@ public final class Meter {
 
   /** Print captured statistics into logcat. */
   public void stats() {
+    final Config config = getConfig();
     final int totalSteps = mCurrent.Position.get();
     final List<Step> steps = new ArrayList<Step>(totalSteps);
     long totalSkipped = 0;
 
     for (int i = 0; i < totalSteps; i++) {
-      final Step subStep = new Step(getConfig(), mCurrent, i);
+      final Step subStep = new Step(config, mCurrent, i);
 
       steps.add(subStep);
 
@@ -296,18 +297,18 @@ public final class Meter {
     // dump all
     for (int i = 0, len = steps.size(); i < len; i++) {
       if ((mCurrent.Flags[i] & Bits.EXCLUDE) == Bits.EXCLUDE) {
-        Log.w(getConfig().OutputTag, steps.get(i).toString());
+        Log.w(config.OutputTag, steps.get(i).toString());
       } else {
-        Log.v(getConfig().OutputTag, steps.get(i).toString());
+        Log.v(config.OutputTag, steps.get(i).toString());
       }
     }
 
     // generate summary of tracking: top items by time, total time, total skipped time,
     if (getConfig().ShowSummary) {
-      Log.v(getConfig().OutputTag, DELIMITER);
+      Log.v(config.OutputTag, DELIMITER);
 
       // TODO: generate summary of tracking: top items by time, total time, total skipped time,
-      Log.i(getConfig().OutputTag, String.format(Locale.US, "final: %.3f ms%s, steps: %d",
+      Log.i(config.OutputTag, String.format(Locale.US, "final: %.3f ms%s, steps: %d",
               toMillis(mCurrent.total() - totalSkipped),
               (totalSkipped > 1000) ? String.format(" (-%.3f ms)", toMillis(totalSkipped)) : "",
               totalSteps));
@@ -317,19 +318,19 @@ public final class Meter {
     pq.addAll(steps);
 
     // publish longest steps
-    if (getConfig().ShowTop5Longest) {
-      Log.v(getConfig().OutputTag, DELIMITER);
+    if (config.ShowTopNLongest > 0) {
+      Log.v(config.OutputTag, DELIMITER);
 
-      for (int i = 1, len = Math.min(pq.size(), 5); i <= len; i++) {
+      for (int i = 1, len = Math.min(pq.size(), config.ShowTopNLongest); i <= len; i++) {
         final Step step = pq.poll();
 
         if (!step.IsSkipped) {
-          Log.i(getConfig().OutputTag, "top-" + i + ": " + step.toString());
+          Log.i(config.OutputTag, "top-" + i + ": " + step.toString());
         }
       }
     }
 
-    Log.v(getConfig().OutputTag, DELIMITER);
+    Log.v(config.OutputTag, DELIMITER);
   }
 
   /**
@@ -480,8 +481,8 @@ public final class Meter {
     public boolean ShowSummary = true;
     /** <code>true</code> - place column starter symbol "| " on each row start, otherwise <code>false</code>. */
     public boolean ShowTableStart = true;
-    /** Show in statistics summary list of longest steps. */
-    public boolean ShowTop5Longest = true;
+    /** Show in statistics summary list of longest steps. Define the Number of steps to show. */
+    public int ShowTopNLongest = 5;
     /** True - use {@link System#nanoTime()}, otherwise use {@link SystemClock#elapsedRealtimeNanos()}. */
     public boolean UseSystemNanos = true;
   }
