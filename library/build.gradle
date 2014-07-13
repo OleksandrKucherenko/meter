@@ -1,0 +1,33 @@
+// Library: meter, Android Micro Benchmarking
+
+apply plugin: 'com.android.library'
+
+
+dependencies {
+  compile fileTree(dir: 'libs', includes: ['*.jar'])
+}
+
+android {
+  compileSdkVersion rootProject.compileSdkVersion
+  buildToolsVersion rootProject.buildToolsVersion
+
+  // Android Manifest generation options
+  defaultConfig {
+    minSdkVersion rootProject.minSdkVersion /* 10 */
+    targetSdkVersion rootProject.targetSdkVersion /* 18 */
+
+    versionCode 1
+    versionName "1.0"
+  }
+
+  buildTypes {
+    release {
+      runProguard false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    }
+  }
+
+  sourceSets {
+    androidTest.setRoot('src/test')
+  }
+}

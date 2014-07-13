@@ -1,0 +1,62 @@
+configurations {
+  codequality
+}
+
+dependencies {
+  codequality files("$project.rootDir/config/quality/classycle/classycle-1.4.1.jar")
+}
+
+task classycle(type: AndroidClassycleTask) {
+  description = 'Runs classycle against Android source sets.'
+  group = 'Code Quality'
+
+  copy {
+    from "${project.rootDir}/config/quality/classycle/images"
+    into "${project.buildDir}/reports/classycle/images"
+  }
+}
+
+/* ================================================================================================================ */
+
+/**
+ * See parameters at http://classycle.sourceforge.net/apidoc/classycle/ant/ReportTask.html
+ */
+class AndroidClassycleTask extends DefaultTask {
+  @org.gradle.api.tasks.InputFile
+  @org.gradle.api.tasks.Optional
+  File xslFile = new File("$project.rootDir/config/quality/classycle/reportXMLtoHTML.xsl")
+
+  @org.gradle.api.tasks.OutputFile
+  @org.gradle.api.tasks.Optional
+  File outputFile = new File("$project.buildDir/reports/classycle/classycle-results.xml")
+
+  FileCollection classycleClasspath = project.configurations.codequality
+  Boolean html = false
+  Project gradleProject = project
+
+  def AndroidclassycleTask() {
+    description = 'Runs classycle against Android source sets.'
+    group = 'Code Quality'
+  }
+
+  @TaskAction
+  def runClassycle() {
+    outputFile.parentFile.mkdirs()
+
+    def antBuilder = services.get(org.gradle.api.internal.project.IsolatedAntBuilder)
+    antBuilder.withClasspath(classycleClasspath).execute {
+      ant.taskdef(name: 'classycle', classname: 'classycle.ant.ReportTask')
+
+      ant.classycle(reportFile: outputFile) {
+        fileset(dir: "$gradleProject.buildDir/classes")
+      }
+    }
+
+    if (html && xslFile != null && xslFile.exists()) {
+      ant.xslt(in: outputFile,
+              style: xslFile,
+              out: outputFile.absolutePath.replaceFirst(~/\.[^\.]+$/, ".html")
+      )
+    }
+  }
+}

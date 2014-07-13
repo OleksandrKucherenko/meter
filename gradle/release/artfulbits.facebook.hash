@@ -1,0 +1,15 @@
+https://developers.facebook.com/docs/android/getting-started/ 
+https://developers.google.com/appengine/docs/java/endpoints/auth#Creating_OAuth_20_client_IDs 
+ 
+ 
+Debug Key: artfulbits.debug.keystore 
+uyMqrFXWJaygBNv/MjcTB4RwkYY=
+ 
+Debug Key (SHA1): artfulbits.debug.keystore 
+(stdin)= bb232aac55d625aca004dbff3237130784709186
+ 
+Release Key: artfulbits.keystore 
+Bmce+9aHdOoVtE7fS3B07tfj7Bc=
+ 
+Release Key (SHA1): artfulbits.keystore 
+(stdin)= 06671efbd68774ea15b44edf4b7074eed7e3ec17

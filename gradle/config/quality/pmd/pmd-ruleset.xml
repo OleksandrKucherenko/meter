@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<ruleset name="Android Lifecycle"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+
+  <description>
+    This ruleset checks my code for bad stuff
+  </description>
+
+  <!-- Android specific Lifecycle checks for Activities, Fragments, Applications and Services -->
+  <rule name="CallSuperFirst"
+        since="4.2.5" language="java"
+        message="super should be called at the start of the method"
+        class="net.sourceforge.pmd.lang.rule.XPathRule"
+        externalInfoUrl="${pmd.website.baseurl}/rules/java/android.html#CallSuperFirst">
+    <description>Super should be called at the start of the method</description>
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value><![CDATA[
+//MethodDeclaration[MethodDeclarator[
+@Image='onAttach' or
+@Image='onCreate' or
+@Image='onCreateView' or
+@Image='onActivityCreated' or
+@Image='onConfigurationChanged' or
+@Image='onPostCreate' or
+@Image='onPostResume' or
+@Image='onRestart' or
+@Image='onRestoreInstanceState' or
+@Image='onResume' or
+@Image='onStart'
+]]
+/Block[not(
+(BlockStatement[1]/Statement/StatementExpression/PrimaryExpression[./PrimaryPrefix[@SuperModifier='true']]/PrimarySuffix[@Image= ancestor::MethodDeclaration/MethodDeclarator/@Image]))]
+[ancestor::ClassOrInterfaceDeclaration[//ClassOrInterfaceType[
+typeof(@Image, 'android.app.Activity', 'Activity') or
+typeof(@Image, 'android.support.v4.app.Fragment', 'Fragment') or
+typeof(@Image, 'android.app.Fragment', 'Fragment') or
+typeof(@Image, 'android.app.Application', 'Application') or
+typeof(@Image, 'android.app.Service', 'Service')
+]]]
+]]>
+        </value>
+      </property>
+    </properties>
+    <example><![CDATA[
+    public class DummyActivity extends Activity {
+    public void onCreate(Bundle bundle) {
+    // missing call to super.onCreate(bundle)
+    foo();
+    }
+    }
+    ]]>
+    </example>
+  </rule>
+
+  <rule name="CallSuperLast"
+        since="4.2.5" language="java"
+        message="super should be called at the end of the method"
+        class="net.sourceforge.pmd.lang.rule.XPathRule"
+        externalInfoUrl="${pmd.website.baseurl}/rules/java/android.html#CallSuperLast">
+    <description>Super should be called at the end of the method</description>
+    <priority>3</priority>
+    <properties>
+      <property name="xpath">
+        <value><![CDATA[
+//MethodDeclaration[MethodDeclarator[
+@Image='finish' or
+@Image='onDetach' or
+@Image='onDestroy' or
+@Image='onDestroyView' or
+@Image='onPause' or
+@Image='onSaveInstanceState' or
+@Image='onStop' or
+@Image='onTerminate'
+]]
+/Block/BlockStatement[last()]
+[not(Statement/StatementExpression/PrimaryExpression[./PrimaryPrefix[@SuperModifier='true']]/PrimarySuffix[@Image= ancestor::MethodDeclaration/MethodDeclarator/@Image])]
+[ancestor::ClassOrInterfaceDeclaration[//ClassOrInterfaceType[
+typeof(@Image, 'android.app.Activity', 'Activity') or
+typeof(@Image, 'android.support.v4.app.Fragment', 'Fragment') or
+typeof(@Image, 'android.app.Fragment', 'Fragment') or
+typeof(@Image, 'android.app.Application', 'Application') or
+typeof(@Image, 'android.app.Service', 'Service')
+]]]
+]]>
+        </value>
+      </property>
+    </properties>
+    <example>
+      <![CDATA[
+    public class DummyActivity extends Activity {
+    public void onPause() {
+    foo();
+    // missing call to super.onPause()
+    }
+    }
+    ]]>
+    </example>
+  </rule>
+</ruleset>

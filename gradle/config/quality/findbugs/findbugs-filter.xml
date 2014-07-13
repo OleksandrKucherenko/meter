@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!-- http://stackoverflow.com/questions/7568579/eclipsefindbugs-exclude-filter-files-doesnt-work -->
+  <Match>
+    <Class name="~.*\.R\$.*"/>
+  </Match>
+  <Match>
+    <Class name="~.*\.Manifest\$.*"/>
+  </Match>
+
+  <!-- All bugs in test classes, except for JUnit-specific bugs -->
+  <Match>
+    <Class name="~.*\.*Test"/>
+    <Not>
+      <Bug code="IJU"/>
+    </Not>
+  </Match>
+  <Match>
+    <Package name="com.truecaller.tests"/>
+  </Match>
+
+  <!-- Exclude all 3rd party libraries -->
+  <Match>
+    <Package name="android.support"/>
+  </Match>
+  <Match>
+    <Package name="com.crashlytics.android"/>
+  </Match>
+  <Match>
+    <Package name="com.android"/>
+  </Match>
+  <Match>
+    <Package name="com.mopub"/>
+  </Match>
+  <Match>
+    <Package name="com.facebook"/>
+  </Match>
+  <Match>
+    <Package name="com.google"/>
+  </Match>
+  <Match>
+    <Package name="com.nokia"/>
+  </Match>
+  <Match>
+    <Package name="fr.castorflex.android"/>
+  </Match>
+  <Match>
+    <Package name="uk.co.senab"/>
+  </Match>
+
+</FindBugsFilter>

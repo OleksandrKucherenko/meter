@@ -1,0 +1,41 @@
+// Configure JavaNCSS
+
+configurations {
+  javancss
+}
+
+dependencies {
+  // v32.53
+  javancss 'org.codehaus.javancss:javancss:+'
+}
+
+task javancss() {
+  description = 'execute JavaNCSS tool on project source code'
+  group = 'Code Quality'
+
+  def ignoreFailures = true
+
+  // create output folders
+  def reportDir = file("$project.buildDir/reports/javancss")
+  reportDir.mkdirs()
+
+  // exclude auto-generated code and 3rd party libs
+  def exclude = ['**/build/generated/**', '**/build/source/**',
+                 '**/com/android/**', '**/com/google/**', '**/android/support/**']
+
+  ant {
+    taskdef name: 'javancss',
+            classname: 'javancss.JavancssAntTask',
+            classpath: configurations.javancss.asPath
+
+    javancss srcdir: 'src',
+            packageMetrics: "yes",
+            excludes: exclude,
+            classMetrics: "yes",
+            functionMetrics: "yes",
+            abortOnFail: !ignoreFailures,
+            generateReport: true,
+            outputfile: "$reportDir/javancss.xml",
+            format: 'xml'
+  }
+}

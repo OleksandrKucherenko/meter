@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC
+    "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
+    "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+<!--
+Configuration based on doc: http://checkstyle.sourceforge.net/checks.html
+Google Standard: https://code.google.com/p/google-api-java-client/source/browse/checkstyle.xml
+ -->
+<module name="Checker">
+
+  <!-- Checks that there are no tab characters in the file. -->
+  <module name="FileTabCharacter">
+    <property name="severity" value="warning"/>
+  </module>
+
+  <property name="severity" value="warning"/>
+
+  <module name="TreeWalker">
+    <!-- We keep TAB size equal to 4 spaces. -->
+    <property name="tabWidth" value="4"/>
+
+    <!-- BEGIN: imports -->
+    <module name="AvoidStarImport"/>
+    <module name="IllegalImport"/>
+    <module name="RedundantImport"/>
+    <module name="UnusedImports"/>
+    <!-- END: imports -->
+
+    <!--  BEGIN: JAVADOC CHECKS -->
+    <!-- Checks for Javadoc comments.                     -->
+    <!-- See http://checkstyle.sf.net/config_javadoc.html -->
+    <module name="JavadocMethod">
+      <property name="scope" value="protected"/>
+      <property name="allowMissingJavadoc" value="true"/>
+      <property name="allowMissingParamTags" value="true"/>
+      <property name="allowMissingReturnTag" value="true"/>
+      <property name="allowMissingThrowsTags" value="true"/>
+      <property name="allowThrowsTagsForSubclasses" value="true"/>
+      <property name="allowUndeclaredRTE" value="true"/>
+      <property name="severity" value="info"/>
+    </module>
+    <module name="JavadocType">
+      <property name="scope" value="protected"/>
+      <property name="severity" value="info"/>
+    </module>
+    <module name="JavadocStyle">
+      <property name="severity" value="info"/>
+    </module>
+    <!--  END: JAVADOC CHECKS -->
+
+    <!-- BEGIN: naming -->
+    <module name="PackageName"/>
+    <module name="TypeName"/>
+    <module name="AbstractClassName">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="ClassTypeParameterName">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="MethodTypeParameterName">
+      <property name="severity" value="info"/>
+    </module>
+    <module name="ConstantNameCheck">
+      <!-- Validates non-private, static, final fields against the supplied
+      public/package final fields "^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$".
+       Also allow common names: Keys.*, Tags.*, Bits.*, Flags.*, Config.*,  -->
+      <metadata name="altname" value="ConstantName"/>
+      <property name="applyToPublic" value="true"/>
+      <property name="applyToProtected" value="true"/>
+      <property name="applyToPackage" value="true"/>
+      <property name="applyToPrivate" value="true"/>
+      <property name="format" value="^([A-Z][A-Z0-9]*(_[A-Z0-9]+)*|Config.*|Bits.*|Flags.*|Keys.*|Tags.*)$"/>
+      <message key="name.invalidPattern"
+               value="Variable ''{0}'' should be in ALL_CAPS (if it is a constant) or be private (otherwise)."/>
+      <property name="severity" value="info"/>
+    </module>
+    <module name="StaticVariableNameCheck">
+      <!-- Validates static, non-final fields against the supplied
+      expression "^[a-z][a-zA-Z0-9]*_?$". -->
+      <metadata name="altname" value="StaticVariableName"/>
+      <property name="applyToPublic" value="true"/>
+      <property name="applyToProtected" value="true"/>
+      <property name="applyToPackage" value="true"/>
+      <property name="applyToPrivate" value="true"/>
+      <property name="format" value="^[a-z][a-zA-Z0-9]*_?$"/>
+      <property name="severity" value="info"/>
+    </module>
+    <module name="MemberNameCheck">
+      <!-- Validates non-static members against the supplied expression. -->
+      <metadata name="altname" value="MemberName"/>
+      <property name="applyToPublic" value="true"/>
+      <property name="applyToProtected" value="true"/>
+      <property name="applyToPackage" value="true"/>
+      <property name="applyToPrivate" value="true"/>
+      <property name="format" value="^([a-z][a-zA-Z0-9]*|m[A-Z][a-zA-Z0-9]*)$"/>
+      <property name="severity" value="info"/>
+    </module>
+    <module name="MethodName"/>
+    <module name="MethodNameCheck">
+      <!-- Validates identifiers for method names. -->
+      <metadata name="altname" value="MethodName"/>
+      <property name="format" value="^[a-z][a-zA-Z0-9]*(_[a-zA-Z0-9]+)*$"/>
+      <property name="severity" value="info"/>
+    </module>
+    <module name="ParameterName">
+      <!-- Validates identifiers for method parameters against the
+        expression "^[a-z][a-zA-Z0-9]*$". -->
+      <property name="severity" value="info"/>
+    </module>
+    <module name="LocalFinalVariableName">
+      <!-- Validates identifiers for local final variables against the
+        expression "^[a-z][a-zA-Z0-9]*$". -->
+      <property name="severity" value="info"/>
+    </module>
+    <module name="LocalVariableName">
+      <!-- Validates identifiers for local variables against the
+        expression "^[a-z][a-zA-Z0-9]*$". -->
+      <property name="severity" value="info"/>
+    </module>
+    <!-- END: naming -->
+
+    <!-- BEGIN: whitespace -->
+    <module name="NoWhitespaceAfter">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="NoWhitespaceBefore">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="WhitespaceAfter">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="WhitespaceAround">
+      <property name="allowEmptyMethods" value="true"/>
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="GenericWhitespace">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="EmptyForIteratorPad">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="MethodParamPad">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="OperatorWrap">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="ParenPad">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="TypecastParenPad">
+      <property name="severity" value="ignore"/>
+    </module>
+    <!-- END: whitespace -->
+
+    <!-- BEGIN: modifiers -->
+    <module name="ModifierOrder">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="RedundantModifier">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="ModifierOrder"/>
+    <!-- END: modifiers -->
+
+    <!-- BEGIN: good practices -->
+    <module name="AvoidInlineConditionals">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="InnerTypeLast">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="EqualsAvoidNull"/>
+    <module name="FinalParameters">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="FinalLocalVariable">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="HiddenField"/>
+    <module name="IllegalInstantiation"/>
+    <module name="HideUtilityClassConstructor"/>
+    <module name="InnerAssignment">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="MagicNumber"/>
+    <module name="MissingSwitchDefault"/>
+    <module name="ModifiedControlVariable"/>
+    <module name="SimplifyBooleanExpression"/>
+    <module name="SimplifyBooleanReturn"/>
+    <module name="StringLiteralEquality"/>
+    <module name="NestedForDepth">
+      <property name="max" value="2"/>
+    </module>
+    <module name="NestedIfDepth">
+      <property name="max" value="2"/>
+    </module>
+    <module name="NestedTryDepth"/>
+    <module name="IllegalCatch"/>
+    <module name="IllegalThrows"/>
+    <module name="PackageDeclaration"/>
+    <module name="ReturnCount">
+      <property name="max" value="1"/>
+      <property name="format" value="^(equals|compareTo)$"/>
+    </module>
+    <module name="ParameterAssignment"/>
+    <module name="DefaultComesLast"/>
+    <module name="FallThrough"/>
+    <module name="MultipleStringLiterals">
+      <property name="allowedDuplicates" value="2"/>
+    </module>
+    <!--<module name="RequireThis">-->
+    <!--<property name="severity" value="ignore"/>-->
+    <!--</module>-->
+    <module name="UnnecessaryParentheses"/>
+    <module name="OneStatementPerLine"/>
+    <module name="RedundantThrows">
+      <property name="suppressLoadErrors" value="true"/>
+    </module>
+    <module name="EqualsHashCode"/>
+    <!-- END: good practices -->
+
+    <!-- BEGIN: design -->
+    <module name="FinalClass"/>
+    <module name="HideUtilityClassConstructor"/>
+    <module name="DesignForExtension">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="ThrowsCount">
+      <property name="max" value="3"/>
+    </module>
+    <module name="InterfaceIsType"/>
+    <!-- END: design -->
+
+    <!-- BEGIN: blocks -->
+    <module name="EmptyBlock"/>
+    <module name="NeedBraces"/>
+    <module name="AvoidNestedBlocks"/>
+    <module name="EmptyStatement"/>
+    <!-- END: blocks -->
+
+    <!-- BEGIN: Misc -->
+    <module name="ArrayTypeStyle"/>
+    <module name="TodoComment">
+      <property name="severity" value="ignore"/>
+    </module>
+    <module name="UpperEll">
+      <property name="severity" value="ignore"/>
+    </module>
+    <!-- END: -->
+
+    <!-- BEGIN: reasonable size limitations -->
+    <module name="LineLength">
+      <property name="max" value="120"/>
+      <property name="severity" value="warning"/>
+
+      <!--
+      The default ignore pattern exempts the following elements:
+        - import statements
+        - long URLs inside comments
+      -->
+      <property name="ignorePattern"
+                value="${com.puppycrawl.tools.checkstyle.checks.sizes.LineLength.ignorePattern}"
+                default="^(package .*;\s*)|(import .*;\s*)|( *\* *https?://.*)$"/>
+    </module>
+    <module name="MethodLength">
+      <property name="max" value="80"/>
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="ParameterNumber">
+      <!-- SIX is already too much parameters, after 4 better to refactor the code -->
+      <property name="max" value="6"/>
+      <property name="severity" value="error"/>
+    </module>
+    <module name="AnonInnerLength">
+      <!-- anonymous classes length should be shorter 30 lines -->
+      <property name="max" value="30"/>
+      <property name="severity" value="error"/>
+    </module>
+    <module name="ExecutableStatementCount">
+      <property name="max" value="40"/>
+      <property name="severity" value="error"/>
+    </module>
+    <module name="MethodCount">
+      <property name="maxPublic" value="40"/>
+      <property name="severity" value="error"/>
+    </module>
+    <module name="OuterTypeNumber">
+      <!-- allow one top level class declaration in file -->
+      <property name="severity" value="error"/>
+    </module>
+    <!-- END: reasonable size limitations -->
+
+    <!-- BEGIN: code metrics -->
+    <module name="BooleanExpressionComplexity">
+      <property name="max" value="3"/>
+      <property name="severity" value="error"/>
+    </module>
+    <module name="ClassDataAbstractionCoupling"/>
+    <module name="ClassFanOutComplexity"/>
+    <module name="CyclomaticComplexity">
+      <!-- Generally 1-4 is considered good, 5-7 ok, 8-10 consider re-factoring, and 11+ re-factor now! -->
+      <property name="max" value="7"/>
+      <property name="severity" value="error"/>
+    </module>
+    <module name="NPathComplexity">
+      <!-- The NPATH metric computes the number of possible execution paths through a function -->
+      <property name="max" value="20"/>
+      <property name="severity" value="error"/>
+    </module>
+    <module name="JavaNCSS">
+      <property name="methodMaximum" value="40"/>
+      <property name="classMaximum" value="1200"/>
+      <property name="fileMaximum" value="1500"/>
+      <property name="severity" value="error"/>
+    </module>
+    <!-- END: code metrics -->
+
+  </module>
+
+  <module name="FileLength">
+    <!-- limit files length to 1500 lines -->
+    <property name="max" value="1500"/>
+    <property name="severity" value="warning"/>
+  </module>
+
+  <module name="NewlineAtEndOfFile">
+    <property name="severity" value="ignore"/>
+  </module>
+
+  <module name="Translation"/>
+
+  <module name="FileTabCharacter">
+    <property name="severity" value="ignore"/>
+  </module>
+
+  <module name="RegexpSingleline">
+    <property name="severity" value="ignore"/>
+    <property name="format" value="\s+$"/>
+    <property name="message" value="Line has trailing spaces."/>
+  </module>
+
+  <!-- Checks that FIXME is not used in comments.  TODO is preferred. -->
+  <module name="RegexpSingleline">
+    <property name="severity" value="warning"/>
+    <property name="format" value="((//.*)|(\*.*))FIXME"/>
+    <property name="message"
+              value='TODO is preferred to FIXME.  e.g. "TODO(johndoe): Refactor when v2 is released."'/>
+  </module>
+
+  <!-- WARNING: comment -->
+  <module name="RegexpSingleline">
+    <property name="severity" value="warning"/>
+    <property name="format" value="((//.*)|(\*.*))WARNING:"/>
+    <property name="message" value='WARNING message inside the code. Be careful with code block."'/>
+  </module>
+
+  <!-- NOTE: comment -->
+  <module name="RegexpSingleline">
+    <property name="severity" value="info"/>
+    <property name="format" value="((//.*)|(\*.*))NOTE:"/>
+    <property name="message" value='NOTE message inside the code. Be careful with code block."'/>
+  </module>
+
+</module>

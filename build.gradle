@@ -1,0 +1,38 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+  repositories {
+    jcenter()
+    mavenLocal()
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'com.android.tools.build:gradle:+'
+    classpath 'org.robolectric.gradle:gradle-android-test-plugin:+'
+  }
+}
+
+// include into all project central maven repository
+allprojects {
+  repositories {
+    jcenter()
+    mavenLocal()
+    mavenCentral()
+  }
+}
+
+/* DEFINE GLOBAL VARIABLES */
+ext.compileSdkVersion = Integer.parseInt(project.ANDROID_BUILD_SDK_VERSION)
+ext.buildToolsVersion = project.ANDROID_BUILD_TOOLS_VERSION /* latest: "20.0.0" */
+
+// specify versions of 3rd party libs to use in project
+ext.androidSupportLib = project.ANDROID_SUPPORT_LIB_VERSION /* latest: v21.0.0-rc1 is only for Android-L */
+
+// MIN and TARGET SDKs for our binaries
+ext.targetSdkVersion = Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
+ext.minSdkVersion = Integer.parseInt(project.ANDROID_BUILD_MIN_SDK_VERSION)
+
+/* DEFINE SHOULD WE USE ROBOLECTRIC TESTS OR NOT */
+ext.useRobolectric = true
+// http://stackoverflow.com/questions/20541630/robolectric-does-not-support-api-level
+// http://raptordigital.blogspot.se/2014/06/robolectric-plugin-upgraded-to-011x.html
