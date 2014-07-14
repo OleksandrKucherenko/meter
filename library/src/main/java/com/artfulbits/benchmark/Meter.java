@@ -18,11 +18,13 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 /**
  * Performance measurement class. Should be used for micro-benchmarking and
  * comparison of different implementations. Class implements very simple logic.
  */
+@SuppressWarnings("UnusedDeclaration")
 @SuppressLint("DefaultLocale")
 public final class Meter {
     /* [ CONSTANTS ] ============================================================================================= */
@@ -38,21 +40,18 @@ public final class Meter {
   private static final int DELIMITER_LENGTH = 80;
   /** Delimiter for statistics output. */
   private static final String DELIMITER = new String(new char[DELIMITER_LENGTH]).replace("\0", "-");
-  /** One day in nanos. */
-  private static final long ONEDAY_NANOS = 24 /* hours */ * 60 /* minutes */ * 60 /* sec */ *
-          1000 /* millis */ * 1000 /* micros */ * 1000 /* nanos */;
-
-  /** Bits cleanup mask. */
-  private static final long MASK = 0xffffffffL;
 
 	/* [ STATIC MEMBERS ] ========================================================================================== */
 
-  private final static WeakHashMap<Thread, Meter> sThreads = new WeakHashMap<Thread, Meter>();
+  /** Store instance of Meter per thread. */
+  private final static WeakHashMap<Thread, Meter> sThreadsToMeter = new WeakHashMap<Thread, Meter>();
 
 	/* [ MEMBERS ] ================================================================================================= */
 
   /** Current active measure. */
   private Measure mCurrent;
+  /** reference on Log output instance. */
+  private Output mLog;
   /** List of captured measures. */
   private final List<Measure> mMeasures = new ArrayList<Measure>(PREALLOCATE);
   /** Instance of the meter class configuration. */
@@ -62,8 +61,42 @@ public final class Meter {
 
 	/* [ OPTIONS ] ================================================================================================= */
 
+  /**
+   * Gets config.
+   *
+   * @return the config
+   */
   public Config getConfig() {
     return mConfig;
+  }
+
+  /** Get instance of the output logger. */
+  public Output getOutput() {
+    if (null == mLog) {
+      mLog = new Output() {
+        @Override
+        public void log(final Level level, final String tag, final String msg) {
+          if (Level.INFO == level) {
+            Log.i(tag, msg);
+          } else if (Level.WARNING == level) {
+            Log.w(tag, msg);
+          } else if (Level.SEVERE == level) {
+            Log.e(tag, msg);
+          } else if (Level.FINE == level) {
+            Log.d(tag, msg);
+          } else {
+            Log.v(tag, msg);
+          }
+        }
+      };
+    }
+
+    return mLog;
+  }
+
+  /** Set custom output instance. Set <code>null</code> to reset to logcat output. */
+  public void setOutput(final Output out) {
+    mLog = out;
   }
 
 	/* [ STATIC METHODS ] ========================================================================================== */
@@ -127,7 +160,7 @@ public final class Meter {
     return (mCurrent != null);
   }
 
-	/* ============================================================================================ */
+	/* [ MAIN API ] =============================================================================================== */
 
   /**
    * Start benchmarking. On each call a new benchmark measurement object created.
@@ -281,34 +314,29 @@ public final class Meter {
 
   /** Print captured statistics into logcat. */
   public void stats() {
+    final Output log = getOutput();
     final Config config = getConfig();
     final int totalSteps = mCurrent.Position.get();
     final List<Step> steps = new ArrayList<Step>(totalSteps);
     long totalSkipped = 0;
 
+    Step subStep;
     for (int i = 0; i < totalSteps; i++) {
-      final Step subStep = new Step(config, mCurrent, i);
-
-      steps.add(subStep);
-
+      steps.add(subStep = new Step(config, mCurrent, i));
       totalSkipped += subStep.Skipped;
     }
 
     // dump all
-    for (int i = 0, len = steps.size(); i < len; i++) {
-      if ((mCurrent.Flags[i] & Bits.EXCLUDE) == Bits.EXCLUDE) {
-        Log.w(config.OutputTag, steps.get(i).toString());
-      } else {
-        Log.v(config.OutputTag, steps.get(i).toString());
-      }
+    for (Step step : steps) {
+      log.log((step.IsSkipped) ? Level.WARNING : Level.FINEST, config.OutputTag, step.toString());
     }
 
     // generate summary of tracking: top items by time, total time, total skipped time,
     if (getConfig().ShowSummary) {
-      Log.v(config.OutputTag, DELIMITER);
+      log.log(Level.FINEST, config.OutputTag, DELIMITER);
 
       // TODO: generate summary of tracking: top items by time, total time, total skipped time,
-      Log.i(config.OutputTag, String.format(Locale.US, "final: %.3f ms%s, steps: %d",
+      log.log(Level.INFO, config.OutputTag, String.format(Locale.US, "final: %.3f ms%s, steps: %d",
               toMillis(mCurrent.total() - totalSkipped),
               (totalSkipped > 1000) ? String.format(" (-%.3f ms)", toMillis(totalSkipped)) : "",
               totalSteps));
@@ -319,19 +347,21 @@ public final class Meter {
 
     // publish longest steps
     if (config.ShowTopNLongest > 0) {
-      Log.v(config.OutputTag, DELIMITER);
+      log.log(Level.FINEST, config.OutputTag, DELIMITER);
 
       for (int i = 1, len = Math.min(pq.size(), config.ShowTopNLongest); i <= len; i++) {
         final Step step = pq.poll();
 
         if (!step.IsSkipped) {
-          Log.i(config.OutputTag, "top-" + i + ": " + step.toString());
+          log.log(Level.INFO, config.OutputTag, "top-" + i + ": " + step.toString());
         }
       }
     }
 
-    Log.v(config.OutputTag, DELIMITER);
+    log.log(Level.FINEST, config.OutputTag, DELIMITER);
   }
+
+  /* [ UTILITIES ] =============================================================================================== */
 
   /**
    * Utility method. Converts array of long primitive types to collection of objects.
@@ -374,7 +404,7 @@ public final class Meter {
     return nanos / 1000.0 /* micros in 1 milli */ / 1000.0 /* nanos in 1 micro */;
   }
 
-	/* ============================================================================================ */
+	/* [FINISH] ==================================================================================================== */
 
   /** Remove from measurements stack last done tracking. Method switches current Measure instance to next in stack. */
   public synchronized void pop() {
@@ -415,15 +445,15 @@ public final class Meter {
     // do nothing, just keep the protocol of calls safe
   }
 
-  /** Get instance of Meter class for current thread. */
+  /** Get instance of Meter class for current thread.  @return the instance */
   public static Meter getInstance() {
     final Thread key = Thread.currentThread();
 
-    if (!sThreads.containsKey(key)) {
-      sThreads.put(key, new Meter());
+    if (!sThreadsToMeter.containsKey(key)) {
+      sThreadsToMeter.put(key, new Meter());
     }
 
-    return sThreads.get(key);
+    return sThreadsToMeter.get(key);
   }
 
 	/* [ NESTED DECLARATIONS ] ===================================================================================== */
@@ -451,6 +481,32 @@ public final class Meter {
     long START = 0x100000000000L;
     /** Time stamp ends of statistics collecting. */
     long END = 0x200000000000L;
+    /** Bits cleanup mask. */
+    long MASK = 0xffffffffL;
+  }
+
+  /** Constants of time units calculated in Nanos. */
+  public interface Nanos {
+    /** One millisecond in nanos. */
+    long ONE_MILLIS = 1L /*millis*/ * 1000L /*micros*/ * 1000L /*nanos*/;
+    /** One second in nanos. */
+    long ONE_SECOND = 1L /*sec*/ * 1000L /*millis*/ * ONE_MILLIS;
+    /** One minute in nanos. */
+    long ONE_MINUTE = 1L /*min*/ * 60L /*sec*/ * ONE_SECOND;
+    /** One hour in nanos. */
+    long ONE_HOUR = 1L /*hour*/ * 60L /*min*/ * ONE_MINUTE;
+  }
+
+  /** Output interface. */
+  public interface Output {
+    /**
+     * Log measure message with defined Level and tag.
+     *
+     * @param level the level of logging. (Mostly used for coloring the output)
+     * @param tag the tag (tag of the output)
+     * @param msg the message to display.
+     */
+    void log(final Level level, final String tag, final String msg);
   }
 
   /** Statistics output and Tracking behavior configuration. */
@@ -464,7 +520,7 @@ public final class Meter {
     public String MethodsTraceFilePath = DEFAULT_TRACE_PATH_PREFIX + "dmtrace.trace";
     /**
      * <code>true</code> - in addition do Android default methods tracing, otherwise <code>false</code>. {@link
-     * Config#MethodsTraceFilePath} defines the output file name for trace info.
+     * Config#MethodsTraceFilePath}* defines the output file name for trace info.
      */
     public boolean DoMethodsTrace;
     /** <code>true</code> - show steps grid in output, otherwise <code>false</code>. */
@@ -489,14 +545,41 @@ public final class Meter {
 
   /** Calibration results holder. */
   public final static class Calibrate {
+    /**
+     * The Start.
+     */
     public long Start;
+    /**
+     * The Beat.
+     */
     public long Beat;
+    /**
+     * The Log.
+     */
     public long Log;
+    /**
+     * The Skip.
+     */
     public long Skip;
+    /**
+     * The Loop.
+     */
     public long Loop;
+    /**
+     * The Recap.
+     */
     public long Recap;
+    /**
+     * The Un loop.
+     */
     public long UnLoop;
+    /**
+     * The End.
+     */
     public long End;
+    /**
+     * The Pop.
+     */
     public long Pop;
 
     @Override
@@ -534,6 +617,11 @@ public final class Meter {
 
 		/* [ CONSTRUCTOR ] ============================================================================================ */
 
+    /**
+     * Instantiates a new Measure.
+     *
+     * @param meter the meter
+     */
     public Measure(final Meter meter) {
       Parent = meter;
       Id = Parent.mMeasures.size();
@@ -543,7 +631,7 @@ public final class Meter {
       add(Start, Bits.INCLUDE | Bits.START);
     }
 
-    /** Get the last timestamp (maximum) of the measurement. */
+    /** Get the last timestamp (maximum) of the measurement.  @return the long */
     public long theEnd() {
       final int totalTimes = Position.get();
       final long end = Ranges[totalTimes - 1];
@@ -551,11 +639,18 @@ public final class Meter {
       return end;
     }
 
-    /** Get total time of measurement. */
+    /** Get total time of measurement.  @return the long */
     public long total() {
       return theEnd() - Start;
     }
 
+    /**
+     * Add int.
+     *
+     * @param time the time
+     * @param flags the flags
+     * @return the int
+     */
     public int add(final long time, final long flags) {
       final boolean isIteration = (flags & Bits.RECAP) == Bits.RECAP;
       final boolean isLoopStart = (flags & Bits.LOOP) == Bits.LOOP;
@@ -564,8 +659,8 @@ public final class Meter {
       final int index;
 
       if (isLoopStart) {
-        final int counter = (int) (flags & MASK);
-        final long onlyFlags = flags & (~MASK);
+        final int counter = (int) (flags & Bits.MASK);
+        final long onlyFlags = flags & (~Bits.MASK);
         index = addLoop(time, onlyFlags, counter);
       } else if (isLoopEnd) {
         // into first part of bits we store step index for easier loop begin identifying
@@ -607,6 +702,11 @@ public final class Meter {
       return index;
     }
 
+    /**
+     * Format string.
+     *
+     * @return the string
+     */
     public String format() {
       final StringBuilder format = new StringBuilder(PREALLOCATE * 4);
 
@@ -682,6 +782,7 @@ public final class Meter {
     /**
      * Create class with preallocated space for timestamp's on each iteration.
      *
+     * @param time the time
      * @param maxSize Number of expected iterations. If less than zero - class switch own mode to endless loops
      * tracking.
      */
@@ -813,19 +914,34 @@ public final class Meter {
       }
     };
 
+    /** Is Step contains skipped data or not. */
     public final boolean IsSkipped;
+    /** How much time to skip. Steps may exclude cost of methods call captured by calibration. */
     public final long Skipped;
+    /** Step start time. */
     public final long Start;
+    /** Step total time. */
     public final long Total;
+    /** Accumulated total time. */
     public final long AccumulatedTotal;
+    /** Cost of step in percents. */
     public final double CostPercents;
+    /** Time grid row. */
     public final long[] Times;
-
+    /** Format string for output. */
     public final String Format;
+    /** Log message. */
     public final String Log;
-
+    /** reference on configuration. */
     private final Config mConfig;
 
+    /**
+     * Instantiates a new statistics Step.
+     *
+     * @param config current configuration
+     * @param m current measure instance
+     * @param index the step index
+     */
     public Step(final Config config, final Measure m, final int index) {
       mConfig = config;
 
@@ -850,6 +966,7 @@ public final class Meter {
       Log = m.log(index);
     }
 
+    /** Convert all statistics data to collection of parameters for string format.  @return the list */
     public List<Object> toParams() {
       final List<Object> params = (mConfig.ShowStepsGrid) ?
               Meter.toParams(Times) :
@@ -874,6 +991,7 @@ public final class Meter {
       return params;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String toString() {
       return String.format(Locale.US, Format, toParams().toArray());

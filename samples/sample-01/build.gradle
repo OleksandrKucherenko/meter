@@ -44,6 +44,9 @@ dependencies {
   // custom libs of the sample
   androidTestCompile fileTree(dir: 'libs', include: ['*.jar'])
 
+  /* UNIT TESTS HAS DEPENDENCY ON SUPPORT LIB, SO INCLUDE IT MANUALLY FOR CONTROLLING THE VERSION OF IT */
+  androidTestCompile "com.android.support:support-v4:${rootProject.androidSupportLib}"
+
   /* Espresso (v1.1) */
   // ALTERNATIVE:
   //   androidTestCompile files('../_libs/espresso/espresso-1.1-bundled.jar')
@@ -76,7 +79,9 @@ dependencies {
   //            '../_libs/fest/fest-assert-core-2.0M10.jar',
   //            '../_libs/fest/fest-util-1.2.5.jar',
   //            '../_libs/fest/fest-android-1.0.8.jar')
-  androidTestCompile 'com.squareup:fest-android:+'
+  androidTestCompile( 'com.squareup:fest-android:+'){
+    exclude group: 'com.android.support'
+  }
 
   /* jUnit (v4.11) */
   // ALTERNATIVE:

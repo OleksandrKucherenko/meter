@@ -15,6 +15,7 @@ import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMat
 /** Default Android tests. */
 @Suppress
 public class LoginFillEspressoTest extends ActivityInstrumentationTestCase2<MainActivity> {
+  @SuppressWarnings("deprecation")
   public LoginFillEspressoTest() {
     super("com.artfulbits.benchmark.sample", MainActivity.class);
   }
