@@ -5,11 +5,21 @@ env:
   matrix:
     - ANDROID_TARGET=android-19  ANDROID_ABI=armeabi-v7a
 
+before_install:
+  - android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
+#  - echo yes | android update sdk --all --filter build-tools-19.1.0 --no-ui --force
+
+# list of available components https://github.com/travis-ci/travis-ci/issues/2301
 android:
   components:
-    # version 19.1 is already available but it not supported yet by Travis CI yet
+    - platform-tools
     - build-tools-19.1.0
+    - extra-android-support
+    - extra-android-m2repository
+    - extra-google-m2repository
     - android-19
+  licenses:
+    - '.+'
 
 before_script:
     - chmod +x gradlew
