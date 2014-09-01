@@ -21,18 +21,22 @@ allprojects {
   }
 }
 
-/* DEFINE GLOBAL VARIABLES */
-ext.compileSdkVersion = Integer.parseInt(project.ANDROID_BUILD_SDK_VERSION)
-ext.buildToolsVersion = project.ANDROID_BUILD_TOOLS_VERSION /* latest: "20.0.0" */
+allprojects {
+  /* DEFINE GLOBAL VARIABLES */
+  ext {
+    androidCompileSdkVersion = Integer.parseInt(project.ANDROID_BUILD_SDK_VERSION)
+    androidBuildToolsVersion = project.ANDROID_BUILD_TOOLS_VERSION /* latest: "20.0.0" */
 
-// specify versions of 3rd party libs to use in project
-ext.androidSupportLib = project.ANDROID_SUPPORT_LIB_VERSION /* latest: v21.0.0-rc1 is only for Android-L */
+    /* specify versions of 3rd party libs to use in project */
+    androidSupportLib = project.ANDROID_SUPPORT_LIB_VERSION /* latest: v21.0.0-rc1 is only for Android-L */
 
-// MIN and TARGET SDKs for our binaries
-ext.targetSdkVersion = Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
-ext.minSdkVersion = Integer.parseInt(project.ANDROID_BUILD_MIN_SDK_VERSION)
+    /* MIN and TARGET SDKs for our binaries */
+    androidTargetSdkVersion = Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
+    androidMinSdkVersion = Integer.parseInt(project.ANDROID_BUILD_MIN_SDK_VERSION)
 
-/* DEFINE SHOULD WE USE ROBOLECTRIC TESTS OR NOT */
-ext.useRobolectric = true
-// http://stackoverflow.com/questions/20541630/robolectric-does-not-support-api-level
-// http://raptordigital.blogspot.se/2014/06/robolectric-plugin-upgraded-to-011x.html
+    /* DEFINE SHOULD WE USE ROBOLECTRIC TESTS OR NOT */
+    // http://stackoverflow.com/questions/20541630/robolectric-does-not-support-api-level
+    // http://raptordigital.blogspot.se/2014/06/robolectric-plugin-upgraded-to-011x.html
+    useRobolectric = true
+  }
+}

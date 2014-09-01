@@ -17,22 +17,23 @@ buildscript {
 
 apply plugin: 'com.android.application'
 
-if (rootProject.useRobolectric) {
+if (useRobolectric) {
   apply plugin: 'robolectric'
 }
 
-dependencies {
-  repositories {
-    mavenCentral()
-    maven {
-      url 'https://oss.sonatype.org/content/repositories/snapshots/'
-    }
+/* DEFINE REPOSITORY WITH LATEST ROBOLECTRIC VERSION */
+repositories {
+  mavenCentral()
+  maven {
+    url 'https://oss.sonatype.org/content/repositories/snapshots/'
   }
+}
 
+dependencies {
   /* ----------------------------- */
   /* RELEASE and DEBUG COMPILATION */
   /* ----------------------------- */
-  compile "com.android.support:appcompat-v7:${rootProject.androidSupportLib}"
+  compile "com.android.support:appcompat-v7:${androidSupportLib}"
   compile project(':library')
 
   compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -45,7 +46,7 @@ dependencies {
   androidTestCompile fileTree(dir: 'libs', include: ['*.jar'])
 
   /* UNIT TESTS HAS DEPENDENCY ON SUPPORT LIB, SO INCLUDE IT MANUALLY FOR CONTROLLING THE VERSION OF IT */
-  androidTestCompile "com.android.support:support-v4:${rootProject.androidSupportLib}"
+  androidTestCompile "com.android.support:support-v4:${androidSupportLib}"
 
   /* Espresso (v1.1) */
   // ALTERNATIVE:
@@ -79,7 +80,7 @@ dependencies {
   //            '../_libs/fest/fest-assert-core-2.0M10.jar',
   //            '../_libs/fest/fest-util-1.2.5.jar',
   //            '../_libs/fest/fest-android-1.0.8.jar')
-  androidTestCompile( 'com.squareup:fest-android:+'){
+  androidTestCompile('com.squareup:fest-android:+') {
     exclude group: 'com.android.support'
   }
 
@@ -115,13 +116,13 @@ dependencies {
 
 android {
   /* INHERIT SETTINGS FROM THE ROOT PROJECT */
-  compileSdkVersion rootProject.compileSdkVersion
-  buildToolsVersion rootProject.buildToolsVersion
+  compileSdkVersion androidCompileSdkVersion
+  buildToolsVersion androidBuildToolsVersion
 
   /* ATTACH TEST INSTRUMENTATION, DEFINE SDK VERSION, DEFINE APP VERSION */
   defaultConfig {
-    minSdkVersion rootProject.minSdkVersion /* 10 */
-    targetSdkVersion rootProject.targetSdkVersion /* 18 */
+    minSdkVersion androidMinSdkVersion
+    targetSdkVersion androidTargetSdkVersion
 
     versionCode 1
     versionName "1.0"
@@ -255,7 +256,7 @@ android {
 
 }
 
-if (rootProject.useRobolectric) {
+if (useRobolectric) {
   robolectric {
     include '**/*Test.class'
     exclude '**/espresso/**/*.class'
@@ -284,7 +285,7 @@ task openResults(dependsOn: ["openLintResults"]) {
   logger.lifecycle(":openResults");
 }
 
-if (rootProject.useRobolectric) {
+if (useRobolectric) {
   // Task opens robolectric report file in default web-browser
   task openTestResults(type: Exec, dependsOn: ["test"]) {
     description = 'open Robolectric results in current web browser'
