@@ -71,11 +71,15 @@ before_script:
   - echo "${ANDROID_TARGET}", "${ANDROID_ABI}"
   - echo no | android create avd --force -n test -t "$ANDROID_TARGET" --abi "$ANDROID_ABI"
   - emulator -avd test -no-skin -no-audio -no-window &
+
+script:
+  # lets compile the project during the emulator startup
+  - ./gradlew assembleDebug assembleDebugTest --info -PdisablePreDex
+  # now we will wait for emulator
   - android-wait-for-emulator
   - adb shell input keyevent 26 &
   - adb shell input keyevent 82 &
-
-script:
+  # second run will be fast!
   - ./gradlew connectedCheck -PdisablePreDex
   # - ./gradlew assembleDebug installDebug test --info -PdisablePreDex
   # - ./gradlew connectedAndroidTest
