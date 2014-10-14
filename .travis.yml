@@ -80,7 +80,7 @@ script:
   - adb shell input keyevent 26 &
   - adb shell input keyevent 82 &
   # second run will be fast!
-  - ./gradlew connectedCheck -PdisablePreDex
+  - ./gradlew :samples:sample-01:connectedCheck -PdisablePreDex
   # - ./gradlew assembleDebug installDebug test --info -PdisablePreDex
   # - ./gradlew connectedAndroidTest
 
