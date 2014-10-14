@@ -1,3 +1,9 @@
+# References:
+#   COVERITY SCAN: https://scan.coverity.com/travis_ci
+#   ANDROID: http://docs.travis-ci.com/user/languages/android/
+#    http://gmariotti.blogspot.se/2014/04/integrating-android-github-repo-with.html
+# 
+
 language: android
 jdk: oraclejdk7
 
@@ -7,7 +13,11 @@ env:
    # via the "travis encrypt" command using the project repo's public key
    - secure: "SGSNk6CwuNjp5yVHKB95GxjhlYmph86BUeFPwl7IYnqe5WoUR9sXkOYSuMLO5qEXr+e2YaYVIZp70xI/jBi+r/kTEdWUYjtchs/kz7dDCXLISJCpUnAIxgVNx/V3ez4/jwWI89MJcLsgJGARAziio8fBgbJf7m+grD4KIu8Ogxg="
   matrix:
+    # run 'android list targets & pause' to see list of possible targets for matrix
     - ANDROID_TARGET=android-19  ANDROID_ABI=armeabi-v7a
+    - ANDROID_TARGET=android-19  ANDROID_ABI=x86
+    - ANDROID_TARGET=Google Inc.:Google APIs:19 ANDROID_ABI
+    - ANDROID_TARGET=Google Inc.:Google APIs (x86 System Image):19 ANDROID_ABI=x86
 
 addons:
   coverity_scan:
@@ -15,15 +25,15 @@ addons:
       name: "OleksandrKucherenko/meter"
       description: "Micro-benchmarking tool for Android projects."
     build_command_prepend: "./gradlew clean --info --no-color"
-    build_command:   "./gradlew assembleDebug --info --no-color"
+    build_command:   "./gradlew assembleDebug --info --no-color -PdisablePreDex"
     branch_pattern: coverity_scan
-
 
 before_install:
   - android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
 #  - echo yes | android update sdk --all --filter build-tools-19.1.0 --no-ui --force
 
 # list of available components https://github.com/travis-ci/travis-ci/issues/2301
+# For a full list, run `android list sdk -a --extended`
 android:
   components:
     - platform-tools
@@ -33,17 +43,26 @@ android:
     - extra-android-m2repository
     - extra-google-m2repository
     - android-19
+    # For emulator running we need to install at least one system image: API 19 == [x86, ARM] * [System, Google]
+    - sys-img-x86-android-19
+    - sys-img-armeabi-v7a-android-19
+    - addon-google_apis_x86-google-19
+    - addon-google_apis-google-19
   licenses:
     - '.+'
 
+install:
+  - true
+
 before_script:
-    - chmod +x gradlew
-    # Create and start emulator
-    #- echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
-    #- emulator -avd test -no-skin -no-audio -no-window &
-    #- adb wait-for-device
-    #- adb shell input keyevent 82 &
+  - chmod +x gradlew
+  # Create and start emulator
+  - echo no | android create avd --force -n test -t "${ANDROID_TARGET}" --abi $ANDROID_ABI
+  - emulator -avd test -no-skin -no-audio -no-window &
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
 
 script:
-    - ./gradlew test --info --no-color
-    # - ./gradlew connectedAndroidTest --no-color
+  - ./gradlew build connectedCheck -PdisablePreDex
+  - ./gradlew debug install test --info --no-color -PdisablePreDex
+  # - ./gradlew connectedAndroidTest --no-color
