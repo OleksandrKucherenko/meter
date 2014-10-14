@@ -65,7 +65,7 @@ before_script:
 
 script:
   - ./gradlew build connectedCheck -PdisablePreDex
-  - ./gradlew debug install test --info --no-color -PdisablePreDex
+  - ./gradlew assembleDebug installDebug test --info --no-color -PdisablePreDex
   # - ./gradlew connectedAndroidTest --no-color
 
 #after_success:
