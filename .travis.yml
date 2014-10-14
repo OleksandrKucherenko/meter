@@ -8,6 +8,7 @@ language: android
 jdk: oraclejdk7
 
 env:
+  - TERM=dumb
   global:
    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
    # via the "travis encrypt" command using the project repo's public key
@@ -66,3 +67,6 @@ script:
   - ./gradlew build connectedCheck -PdisablePreDex
   - ./gradlew debug install test --info --no-color -PdisablePreDex
   # - ./gradlew connectedAndroidTest --no-color
+
+#after_success:
+#  - coveralls

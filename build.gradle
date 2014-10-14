@@ -1,42 +1,79 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-  repositories {
-    jcenter()
-    mavenLocal()
-    mavenCentral()
-  }
-  dependencies {
-    classpath 'com.android.tools.build:gradle:+'
-    classpath 'org.robolectric.gradle:gradle-android-test-plugin:+'
-  }
+    /* GLOBAL REPOSITORIES FOR BUILD SCRIPT, DEPENDENCIES SERVERS */
+    repositories {
+        jcenter()
+        mavenLocal()
+        mavenCentral()
+    }
+    /* REFERENCES ON BUILD PLUGINS */
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.13.3'
+        classpath 'org.robolectric.gradle:gradle-android-test-plugin:0.10.0'
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.5'
+    }
 }
 
-// include into all project central maven repository
+// get Git revision as a NUMBER (subversion style of revision)
+def gitRevision() {
+    return "git rev-list --count HEAD".execute().text.trim();
+}
+
+/* INJECT IN ALL PROJECT GLOBAL SETTINGS */
 allprojects {
-  repositories {
-    jcenter()
-    mavenLocal()
-    mavenCentral()
-  }
+    /* DEFINE REPOSITORIES FOR SUB-PROJECTS */
+    repositories {
+        jcenter()
+        mavenLocal()
+        mavenCentral()
+    }
+
+    /* DEFINE GLOBAL VARIABLES */
+    ext {
+        androidCompileSdkVersion = Integer.parseInt(project.ANDROID_BUILD_SDK_VERSION)
+        androidBuildToolsVersion = project.ANDROID_BUILD_TOOLS_VERSION /* latest: "20.0.0" */
+
+        /* specify versions of 3rd party libs to use in project */
+        androidSupportLib = project.ANDROID_SUPPORT_LIB_VERSION /* latest: v21.0.0-rc1 is only for Android-L */
+
+        /* MIN and TARGET SDKs for our binaries */
+        androidTargetSdkVersion = Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
+        androidMinSdkVersion = Integer.parseInt(project.ANDROID_BUILD_MIN_SDK_VERSION)
+
+        /* DEFINE SHOULD TESTING CONFIGURATION BE ENABLED OR NOT */
+        useTesting = Boolean.parseBoolean(project.USE_TDD)
+
+        /* SHOULD WE USE ESPRESSO FRAMEWORK OR NOT */
+        useEspresso = useTesting & Boolean.parseBoolean(project.USE_ESPRESSO)
+
+        /* DEFINE SHOULD WE USE ROBOLECTRIC TESTS OR NOT */
+        useRobolectric = useTesting & Boolean.parseBoolean(project.USE_ROBOLECTRIC)
+
+        /* dynamic calculation of git revision, its a part of the app version now */
+        GIT_REVISION = "${gitRevision()}"
+    }
+
+    /* ATTACH DEPENDENCY UPDATE VERSION REPORT PLUGIN */
+    apply plugin: 'com.github.ben-manes.versions'
 }
 
-allprojects {
-  /* DEFINE GLOBAL VARIABLES */
-  ext {
-    androidCompileSdkVersion = Integer.parseInt(project.ANDROID_BUILD_SDK_VERSION)
-    androidBuildToolsVersion = project.ANDROID_BUILD_TOOLS_VERSION /* latest: "20.0.0" */
-
-    /* specify versions of 3rd party libs to use in project */
-    androidSupportLib = project.ANDROID_SUPPORT_LIB_VERSION /* latest: v21.0.0-rc1 is only for Android-L */
-
-    /* MIN and TARGET SDKs for our binaries */
-    androidTargetSdkVersion = Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
-    androidMinSdkVersion = Integer.parseInt(project.ANDROID_BUILD_MIN_SDK_VERSION)
-
-    /* DEFINE SHOULD WE USE ROBOLECTRIC TESTS OR NOT */
-    // http://stackoverflow.com/questions/20541630/robolectric-does-not-support-api-level
-    // http://raptordigital.blogspot.se/2014/06/robolectric-plugin-upgraded-to-011x.html
-    useRobolectric = true
-  }
-}
+// References:
+// http://toastdroid.com/2014/03/28/customizing-your-build-with-gradle/
+// http://stackoverflow.com/questions/18328730/how-to-create-a-release-signed-apk-file-using-gradle/19603006#19603006
+// http://stackoverflow.com/questions/20541630/robolectric-does-not-support-api-level
+// http://raptordigital.blogspot.se/2014/06/robolectric-plugin-upgraded-to-011x.html
+//
+// Useful Commands:
+// [1] Shows dependencies of projects in tree view representation
+// > gradle projects -q
+//
+// [2] Show all tasks
+// > gradle tasks --all
+//
+// [3] get dependency update report:
+// > gradle dependencyUpdates
+// > gradle dependencyUpdates -Drevision=release
+//
+// [4] profile build performance:
+// > gradle clean assembleDebug --profile
