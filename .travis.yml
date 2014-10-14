@@ -8,7 +8,6 @@ language: android
 jdk: oraclejdk7
 
 env:
-  - TERM=dumb
   global:
    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
    # via the "travis encrypt" command using the project repo's public key
