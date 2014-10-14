@@ -4,7 +4,7 @@ Meter - is a simple micro-benchmarking tool for Android (not only for Android, i
 
 It was designed for Android. Meter try to make measurement an easy task, with minimal impact on total project performance.
 
-# State [![Build Status](https://secure.travis-ci.org/OleksandrKucherenko/meter.png?branch=master)](https://travis-ci.org/OleksandrKucherenko/meter) [![Coverage Status](https://coveralls.io/repos/OleksandrKucherenko/meter/badge.png)](https://coveralls.io/r/OleksandrKucherenko/meter)
+# State [![Build Status](https://secure.travis-ci.org/OleksandrKucherenko/meter.png?branch=master)](https://travis-ci.org/OleksandrKucherenko/meter) [![Coverage Status](https://coveralls.io/repos/OleksandrKucherenko/meter/badge.png)](https://coveralls.io/r/OleksandrKucherenko/meter) [![Coverity Scan Build Status](https://scan.coverity.com/projects/3248/badge.svg)](https://scan.coverity.com/projects/3248)
 
 Active development, started at: 2014-07-13
 
