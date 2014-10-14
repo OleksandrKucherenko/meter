@@ -16,7 +16,7 @@ env:
     # run 'android list targets & pause' to see list of possible targets for matrix
     - ANDROID_TARGET=android-19  ANDROID_ABI=armeabi-v7a
     - ANDROID_TARGET=android-19  ANDROID_ABI=x86
-    - ANDROID_TARGET="Google Inc.:Google APIs:19" ANDROID_ABI
+    - ANDROID_TARGET="Google Inc.:Google APIs:19" ANDROID_ABI=armeabi-v7a
     - ANDROID_TARGET="Google Inc.:Google APIs (x86 System Image):19" ANDROID_ABI=x86
 
 addons:
