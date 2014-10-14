@@ -2,10 +2,14 @@
 #   COVERITY SCAN: https://scan.coverity.com/travis_ci
 #   ANDROID: http://docs.travis-ci.com/user/languages/android/
 #    http://gmariotti.blogspot.se/2014/04/integrating-android-github-repo-with.html
-# 
+#
 
 language: android
 jdk: oraclejdk7
+
+# say gradle to output without color codes, the same as add switch --no-color
+env:
+  - TERM=dumb
 
 env:
   global:
@@ -29,8 +33,11 @@ addons:
     branch_pattern: coverity_scan
 
 before_install:
+  # display list of all possible components 
   - android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
-#  - echo yes | android update sdk --all --filter build-tools-19.1.0 --no-ui --force
+  # make scripts executable for linux CI
+  - chmod +x gradlew
+  - chmod +x android-wait-for-emulator
 
 # list of available components https://github.com/travis-ci/travis-ci/issues/2301
 # For a full list, run `android list sdk -a --extended`
@@ -54,20 +61,23 @@ android:
 install:
   - true
 
+branches:
+  only:
+    - master
+
 before_script:
-  - chmod +x gradlew
-  - chmod +x android-wait-for-emulator
   # Create and start emulator
   - echo "${ANDROID_TARGET}", "${ANDROID_ABI}"
-  - echo no | android create avd --force -n test -t "${ANDROID_TARGET}" --abi "${ANDROID_ABI}"
+  - echo no | android create avd --force -n test -t '${ANDROID_TARGET}' --abi '${ANDROID_ABI}'
   - emulator -avd test -no-skin -no-audio -no-window &
   - android-wait-for-emulator
+  - adb shell input keyevent 26 &
   - adb shell input keyevent 82 &
 
 script:
-  - ./gradlew build connectedCheck -PdisablePreDex
-  - ./gradlew assembleDebug installDebug test --info --no-color -PdisablePreDex
-  # - ./gradlew connectedAndroidTest --no-color
+  - ./gradlew connectedCheck -PdisablePreDex
+  # - ./gradlew assembleDebug installDebug test --info -PdisablePreDex
+  # - ./gradlew connectedAndroidTest
 
-#after_success:
-#  - coveralls
+after_success:
+  - ./gradlew -p  -b coverage.gradle coveralls

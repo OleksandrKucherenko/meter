@@ -9,9 +9,9 @@ buildscript {
     }
     /* REFERENCES ON BUILD PLUGINS */
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.13.3'
-        classpath 'org.robolectric.gradle:gradle-android-test-plugin:0.10.0'
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.5'
+        classpath 'com.android.tools.build:gradle:+'
+        classpath 'org.robolectric.gradle:gradle-android-test-plugin:+'
+        classpath 'com.github.ben-manes:gradle-versions-plugin:+'
     }
 }
 
@@ -49,6 +49,9 @@ allprojects {
 
         /* DEFINE SHOULD WE USE ROBOLECTRIC TESTS OR NOT */
         useRobolectric = useTesting & Boolean.parseBoolean(project.USE_ROBOLECTRIC)
+
+        /* CODE COVERAGE PLUGIN/TOOL VERSION */
+        JaCoCoVersion = project.JACOCO_VERSION
 
         /* dynamic calculation of git revision, its a part of the app version now */
         GIT_REVISION = "${gitRevision()}"

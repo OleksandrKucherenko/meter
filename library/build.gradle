@@ -26,16 +26,16 @@ dependencies {
         /* UNIT TESTS HAS DEPENDENCY ON SUPPORT LIB, SO INCLUDE IT MANUALLY FOR CONTROLLING THE VERSION OF IT */
         androidTestCompile "com.android.support:support-v4:${androidSupportLib}"
 
-        /* Hamcrest (v1.3) */
+        /* Hamcrest (v1.4) */
         androidTestCompile 'org.hamcrest:hamcrest-integration:+',
                 'org.hamcrest:hamcrest-core:+',
                 'org.hamcrest:hamcrest-library:+'
 
-        /* Mockito (v1.9.5) */
+        /* Mockito (v1.10.8) */
         androidTestCompile 'org.mockito:mockito-core:+'
         androidTestCompile 'com.google.dexmaker:dexmaker-mockito:+'
 
-        /* jUnit (v4.11) */
+        /* jUnit (v4.12 beta 2) */
         androidTestCompile('junit:junit:+') { exclude module: 'hamcrest-core' }
     }
 }
@@ -54,6 +54,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            testCoverageEnabled true
+        }
         release {
             runProguard false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

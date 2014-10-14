@@ -8,13 +8,19 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'org.robolectric:robolectric-gradle-plugin:0.13.1'
+        classpath 'org.robolectric:robolectric-gradle-plugin:+'
+        /* https://github.com/kt3k/coveralls-gradle-plugin */
+//        classpath 'net.saliman:gradle-cobertura-plugin:2.0.0'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:+'
     }
 }
 
 // CONFIGURATION based on: http://tools.android.com/tech-docs/new-build-system/user-guide
 
 apply plugin: 'com.android.application'
+apply plugin: 'jacoco'
+//apply plugin: 'cobertura'
+apply plugin: 'com.github.kt3k.coveralls'
 
 /* DEFINE REPOSITORY WITH LATEST ROBOLECTRIC VERSION */
 repositories {
@@ -54,7 +60,7 @@ dependencies {
 
         }
 
-        /* Hamcrest (v1.3) */
+        /* Hamcrest (v1.4) */
         // ALTERNATIVE:
         //    androidTestCompile files(
         //            '../_libs/hamcrest/hamcrest-core-1.3.jar',
@@ -70,7 +76,7 @@ dependencies {
         // ORIGINAL:
         //    androidTestCompile 'com.squareup.dagger:dagger:+'
 
-        /* Mockito (v1.9.5) */
+        /* Mockito (v1.10.8) */
         // ALTERNATIVE:
         //    androidTestCompile files('../_libs/mockito-all-1.9.5.jar')
         // ORIGINAL:
@@ -87,7 +93,7 @@ dependencies {
             exclude group: 'com.android.support', module: 'support-v4'
         }
 
-        /* jUnit (v4.11) */
+        /* jUnit (v4.12 beta 2) */
         // ALTERNATIVE:
         //    androidTestCompile files('../_libs/junit-4.11.jar')
         androidTestCompile('junit:junit:+') { exclude module: 'hamcrest-core' }
@@ -97,23 +103,21 @@ dependencies {
             // ALTERNATIVE:
             //    androidTestCompile files(
             //            '../_libs/robolectric-2.3-with-dependencies.jar')
-            androidTestCompile('org.robolectric:robolectric:+') {
+            androidTestCompile('org.robolectric:robolectric:2.3') {
                 exclude module: 'classworlds'
+                exclude module: 'commons-logging'
+                exclude module: 'httpclient'
                 exclude module: 'maven-artifact'
                 exclude module: 'maven-artifact-manager'
                 exclude module: 'maven-error-diagnostics'
                 exclude module: 'maven-model'
-                exclude module: 'maven-plugin-registry'
-                exclude module: 'maven-profile'
                 exclude module: 'maven-project'
                 exclude module: 'maven-settings'
-                exclude module: 'nekohtml'
                 exclude module: 'plexus-container-default'
                 exclude module: 'plexus-interpolation'
                 exclude module: 'plexus-utils'
                 exclude module: 'wagon-file'
                 exclude module: 'wagon-http-lightweight'
-                exclude module: 'wagon-http-shared'
                 exclude module: 'wagon-provider-api'
                 exclude group: 'com.android.support', module: 'support-v4'
             }
@@ -139,10 +143,11 @@ android {
             testApplicationId 'com.artfulbits.benchmark.sample.tests'
 
             if (useEspresso) {
-                // attach espresso runner
+                /* attach espresso runner */
                 testInstrumentationRunner "com.google.android.apps.common.testing.testrunner.GoogleInstrumentationTestRunner"
             } else {
                 /* default unit testing runner */
+                testInstrumentationRunner "android.test.InstrumentationTestRunner"
             }
         }
     }
@@ -188,10 +193,10 @@ android {
         debug {
             signingConfig signingConfigs.debug
 
-            runProguard = false
+            runProguard false
             debuggable true
             jniDebugBuild true
-            //testCoverageEnabled = true
+            testCoverageEnabled true
         }
         // release without obfuscation
         noProguardRelease.initWith(buildTypes.release)
@@ -223,6 +228,11 @@ android {
         exclude '.README'
     }
 
+    /* be specific about JaCoCo version. */
+    jacoco {
+        version JaCoCoVersion
+    }
+
     /* GIVE DEX MORE MEMORY */
     dexOptions {
         preDexLibraries true
@@ -230,7 +240,7 @@ android {
         javaMaxHeapSize "4g"
     }
 
-    /** Java compatibility - set to v1.7 */
+    /* Java compatibility - set to v1.7 */
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
@@ -280,6 +290,13 @@ android {
         }
     }
 }
+
+/* Enable JaCoCo integration */
+jacoco {
+    toolVersion = JaCoCoVersion
+}
+
+coveralls.jacocoReportPath = 'build/outputs/reports/coverage/debug/report.xml'
 
 if (useRobolectric) {
     apply plugin: 'robolectric'
@@ -363,11 +380,11 @@ task openLintResults(type: Exec, dependsOn: ["lint"]) {
     }
 }
 
-if (!useRobolectric) {
-    task test() {
-        group = 'Testing/QA'
-        description = 'Testing Stub task, for preventing failure of build script.'
-
-        rootProject.logger.lifecycle("--> Robolectric Unit Testings is not enabled! <--")
-    }
-}
+//if (!useRobolectric) {
+//    task test() {
+//        group = 'Testing/QA'
+//        description = 'Testing Stub task, for preventing failure of build script.'
+//
+//        rootProject.logger.lifecycle("--> Robolectric Unit Testings is not enabled! <--")
+//    }
+//}
