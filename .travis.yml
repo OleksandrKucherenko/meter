@@ -35,6 +35,7 @@ addons:
 before_install:
   # display list of all possible components 
   - android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
+  - android list targets | grep -E '^id:'
   # make scripts executable for linux CI
   - chmod +x gradlew
   - chmod +x android-wait-for-emulator
