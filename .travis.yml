@@ -2,7 +2,10 @@
 #   COVERITY SCAN: https://scan.coverity.com/travis_ci
 #   ANDROID: http://docs.travis-ci.com/user/languages/android/
 #    http://gmariotti.blogspot.se/2014/04/integrating-android-github-repo-with.html
-#
+#   LINUX COMMANDS:
+#     GREP: http://linuxcommand.org/man_pages/grep1.html
+#     AWK:  http://linuxcommand.org/man_pages/gawk1.html
+#     BASH: http://www.gnu.org/software/bash/manual/bashref.html
 
 language: android
 jdk: oraclejdk7
@@ -16,6 +19,7 @@ env:
    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
    # via the "travis encrypt" command using the project repo's public key
    - secure: "SGSNk6CwuNjp5yVHKB95GxjhlYmph86BUeFPwl7IYnqe5WoUR9sXkOYSuMLO5qEXr+e2YaYVIZp70xI/jBi+r/kTEdWUYjtchs/kz7dDCXLISJCpUnAIxgVNx/V3ez4/jwWI89MJcLsgJGARAziio8fBgbJf7m+grD4KIu8Ogxg="
+   - COVERALLS_REPO_TOKEN="eMlGHyXPJPqm0sn91H2HwOls3mSIrz15C"
   matrix:
     # run 'android list targets & pause' to see list of possible targets for matrix
     - ANDROID_TARGET=android-19  ANDROID_ABI=armeabi-v7a
