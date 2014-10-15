@@ -30,12 +30,13 @@ addons:
       description: "Micro-benchmarking tool for Android projects."
     build_command_prepend: "./gradlew clean --info --no-color"
     build_command:   "./gradlew assembleDebug --info --no-color -PdisablePreDex"
-    branch_pattern: coverity_scan
+    branch_pattern: master
 
 before_install:
   # display list of all possible components 
   - android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
-  - android list targets | grep -E '^id:'
+  # display list of installed emulators
+  - android list targets | grep -e '^\(\(id:\)\|\( Tag\)\)'
   # make scripts executable for linux CI
   - chmod +x gradlew
   - chmod +x android-wait-for-emulator
@@ -85,4 +86,4 @@ script:
   # - ./gradlew connectedAndroidTest
 
 after_success:
-  - ./gradlew -p  -b coverage.gradle coveralls
+  - ./gradlew coveralls
