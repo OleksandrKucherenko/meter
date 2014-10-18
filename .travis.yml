@@ -18,13 +18,12 @@ env:
     - COVERALLS_REPO_TOKEN="eMlGHyXPJPqm0sn91H2HwOls3mSIrz15C"
     # say gradle to output without color codes, the same as add switch --no-color
     - TERM=dumb
-    - AVD_NAME="test-$RANDOM"
   matrix:
     # run 'android list targets & pause' to see list of possible targets for matrix
-    - ANDROID_TARGET=android-19  ANDROID_ABI=armeabi-v7a
-    - ANDROID_TARGET=android-19  ANDROID_ABI=x86
-    - ANDROID_TARGET='Google Inc.:Google APIs:19' ANDROID_ABI=armeabi-v7a
-    - ANDROID_TARGET='Google Inc.:Google APIs (x86 System Image):19' ANDROID_ABI=x86
+    - ANDROID_TARGET=android-19  ANDROID_ABI=armeabi-v7a  AVD_NAME='test-api19-arm'
+    - ANDROID_TARGET=android-19  ANDROID_ABI=x86  AVD_NAME='test-api19-x86'
+    - ANDROID_TARGET='Google Inc.:Google APIs:19' ANDROID_ABI=armeabi-v7a  AVD_NAME='test-google19-arm'
+    - ANDROID_TARGET='Google Inc.:Google APIs (x86 System Image):19' ANDROID_ABI=x86  AVD_NAME='test-google19-x86'
 
 addons:
   coverity_scan:
