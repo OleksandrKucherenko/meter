@@ -39,6 +39,8 @@ addons:
     branch_pattern: master
 
 before_install:
+  - ls -a
+  - pwd
   # display list of all possible components 
   - android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
   # display list of installed emulators
