@@ -11,6 +11,7 @@ echo "======================================="
 bootanim=""
 laststatus=""
 dateStart=$(date +"%s")
+dateLast=$dateStart
 failcounter=0
 
 until [[ "$bootanim" =~ "stopped" ]]; do
@@ -21,9 +22,13 @@ until [[ "$bootanim" =~ "stopped" ]]; do
 #   echo "$bootanim, in wait $(($diff / 60)):$(($diff % 60))"
 
    if [[ "$bootanim" =~ "$laststatus" ]]; then
+      diff=$(($dateNow-$dateLast))
       echo -ne "..$diff"
    else
-      echo "$bootanim, in wait $(($diff / 60)):$(($diff % 60))"
+      echo -ne "..update arrieved"\\r
+      diff=$(($dateNow-$dateStart))
+      echo "new status: $bootanim, total in wait $(($diff / 60)):$(($diff % 60))"
+      dateLast=$dateNow
    fi
    
    if [[ "$bootanim" =~ "not found" ]]; then
