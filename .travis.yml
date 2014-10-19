@@ -88,5 +88,5 @@ script:
   # - ./gradlew assembleDebug installDebug test --info -PdisablePreDex
   # - ./gradlew connectedAndroidTest
 
-after_success:
-  - ./gradlew coveralls
+#after_success:
+#  - ./gradlew coveralls
