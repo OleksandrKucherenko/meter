@@ -81,7 +81,7 @@ before_script:
   - echo no | android create avd --force -n "$AVD_NAME" -t "$ANDROID_TARGET" --abi "$ANDROID_ABI"
   - emulator -avd $AVD_NAME -no-skin -no-audio -no-window &
   # now we will wait for emulator
-  - wait-for-avd
+  - ./wait-for-avd
   - adb shell input keyevent 26 &
   - adb shell input keyevent 82 &
 
