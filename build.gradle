@@ -10,7 +10,6 @@ buildscript {
     /* REFERENCES ON BUILD PLUGINS */
     dependencies {
         classpath 'com.android.tools.build:gradle:+'
-        classpath 'org.robolectric.gradle:gradle-android-test-plugin:+'
         classpath 'com.github.ben-manes:gradle-versions-plugin:+'
     }
 }
@@ -60,6 +59,20 @@ allprojects {
     /* ATTACH DEPENDENCY UPDATE VERSION REPORT PLUGIN */
     apply plugin: 'com.github.ben-manes.versions'
 }
+
+/* PRINT to output configuration details of the build. */
+println new String(new char[80]).replace("\0", "-")
+println 'Android Build Tools: ' + project.ANDROID_BUILD_TOOLS_VERSION
+println 'Android SDK version: ' + project.ANDROID_BUILD_SDK_VERSION
+println 'Android Support Library: ' + project.ANDROID_SUPPORT_LIB_VERSION
+println 'Target API: ' + project.ANDROID_BUILD_TARGET_SDK_VERSION
+println 'Minimal API: ' + project.ANDROID_BUILD_MIN_SDK_VERSION
+println 'Use Tests: ' + project.USE_TDD
+println 'Use Espresso: ' + project.USE_ESPRESSO
+println 'Use Robolectric: ' + project.USE_ROBOLECTRIC
+println 'JaCoCo Library: ' + project.JACOCO_VERSION
+println 'Source code GIT Revision: ' + "${gitRevision()}"
+println new String(new char[80]).replace("\0", "-")
 
 // References:
 // http://toastdroid.com/2014/03/28/customizing-your-build-with-gradle/
