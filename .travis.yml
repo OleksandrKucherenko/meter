@@ -15,7 +15,10 @@ env:
     # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
     # via the "travis encrypt" command using the project repo's public key
     - secure: "SGSNk6CwuNjp5yVHKB95GxjhlYmph86BUeFPwl7IYnqe5WoUR9sXkOYSuMLO5qEXr+e2YaYVIZp70xI/jBi+r/kTEdWUYjtchs/kz7dDCXLISJCpUnAIxgVNx/V3ez4/jwWI89MJcLsgJGARAziio8fBgbJf7m+grD4KIu8Ogxg="
-    - COVERALLS_REPO_TOKEN="eMlGHyXPJPqm0sn91H2HwOls3mSIrz15C"
+    # Define encrypted EMAIL variable
+    - secure: "bvDKEsJGhkVHblojj+5da5C6z7Hy93irYJZMtdsNZeiT9eERS9qVXbOgbMAWobNu2SGIA9Ce3hRA4SQ1Y2tWWltrQP54E40nWCcWSZWievRk6UL9JmSkrDf9/tyDKDJo+KnDBLF73MB9tEWaxscYdHCALXnGcoIPRoGACL1BCuA="
+    # Define encrypted COVERALLS_REPO_TOKEN variable
+    - secure: "NO1orR9cZgKB6qLMdfwj2+Mh5has9FFFwIxkNadpK6gjhCR/GOCrQLPqEi5BvX4o5fDV8M01rW0dOoRlgOne4pFIXfuQY6rdVaUDYtTQajx1bEvnTQntY15Fj3Bmi8GDVlgIMkuSJmK62brT8oOderOyOYV5QHgVxOtcznIzAhI="
     # say gradle to output without color codes, the same as add switch --no-color
     - TERM=dumb
   matrix:
@@ -30,7 +33,7 @@ addons:
     project:
       name: "OleksandrKucherenko/meter"
       description: "Micro-benchmarking tool for Android projects."
-    notification_email: kucherenko.alex@gmail.com
+    notification_email: $EMAIL
     build_command_prepend: "./gradlew clean --info --no-color"
     build_command:   "./gradlew assembleDebug --info --no-color -PdisablePreDex"
     branch_pattern: master
@@ -72,7 +75,7 @@ branches:
 
 before_script:
   # Create and start emulator
-  - echo "${ANDROID_TARGET}", "${ANDROID_ABI}"
+  - echo "${ANDROID_TARGET}", "${ANDROID_ABI}", "${AVD_NAME}"
   - echo no | android create avd --force -n "$AVD_NAME" -t "$ANDROID_TARGET" --abi "$ANDROID_ABI"
   - emulator -avd $AVD_NAME -no-skin -no-audio -no-window &
 
