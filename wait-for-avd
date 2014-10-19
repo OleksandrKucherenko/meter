@@ -22,9 +22,9 @@ until [[ "$bootanim" =~ "stopped" ]]; do
       diff=$(($dateNow-$dateLast))
       echo -ne "..$diff"
    else
-      echo -ne "..update arrieved\n"
+      echo -ne "..end-of-wait\n"
       diff=$(($dateNow-$dateStart))
-      echo "new status: \'$bootanim\', total in wait $(($diff / 60)):$(($diff % 60))"
+      echo "new status: '$bootanim', total in wait $(($diff / 60)) min $(($diff % 60)) sec"
       dateLast=$dateNow
    fi
    
@@ -47,5 +47,5 @@ diff=$(($dateNow-$dateStart))
 # display summary report
 echo "======================================="
 echo "Android Wait For Emulator Script: Done!"
-echo "Total in wait $(($diff / 60)):$(($diff % 60)) (min:sec) "
+echo "Total in wait $(($diff / 60)):$(($diff % 60)) (min:sec)"
 echo "======================================="
