@@ -4,14 +4,21 @@
 
 set +e
 
+echo "======================================="
+echo "Custom Android Wait For Emulator Script"
+echo "======================================="
+
 bootanim=""
 dateStart=$(date +"%s")
 failcounter=0
+
 until [[ "$bootanim" =~ "stopped" ]]; do
    bootanim=`adb -e shell getprop init.svc.bootanim 2>&1`
+   
    dateNow=$(date +"%s")
    diff=$(($dateNow-$dateStart))
    echo "$bootanim, in wait (min:sec): $(($diff / 60)):$(($diff % 60))" 
+   
    if [[ "$bootanim" =~ "not found" ]]; then
       let "failcounter += 1"
       if [[ $failcounter -gt 15 ]]; then
@@ -19,6 +26,10 @@ until [[ "$bootanim" =~ "stopped" ]]; do
         exit 1
       fi
    fi
+   
    sleep 1
 done
-echo "Done"
+
+echo "======================================="
+echo "Android Wait For Emulator Script: Done!"
+echo "======================================="
