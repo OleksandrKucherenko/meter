@@ -30,6 +30,7 @@ addons:
     project:
       name: "OleksandrKucherenko/meter"
       description: "Micro-benchmarking tool for Android projects."
+    notification_email: kucherenko.alex@gmail.com
     build_command_prepend: "./gradlew clean --info --no-color"
     build_command:   "./gradlew assembleDebug --info --no-color -PdisablePreDex"
     branch_pattern: master
