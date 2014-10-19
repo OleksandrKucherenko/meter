@@ -20,7 +20,7 @@ until [[ "$bootanim" =~ "stopped" ]]; do
    diff=$(($dateNow-$dateStart))
 #   echo "$bootanim, in wait $(($diff / 60)):$(($diff % 60))"
 
-   if [[ "$bootanim" =~ "$laststatus" ]]' then
+   if [[ "$bootanim" =~ "$laststatus" ]]; then
       echo -ne "..$diff"
    else
       echo "$bootanim, in wait $(($diff / 60)):$(($diff % 60))"
