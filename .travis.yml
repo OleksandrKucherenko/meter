@@ -45,7 +45,7 @@ before_install:
   - android list targets | grep -e '^\(\(id:\)\|\( Tag\)\)'
   # make scripts executable for linux CI
   - chmod +x gradlew
-  - chmod +x android-wait-for-emulator
+  - chmod +x wait-for-avd
 
 # list of available components https://github.com/travis-ci/travis-ci/issues/2301
 # For a full list, run `android list sdk -a --extended`
@@ -79,7 +79,7 @@ before_script:
   - echo no | android create avd --force -n "$AVD_NAME" -t "$ANDROID_TARGET" --abi "$ANDROID_ABI"
   - emulator -avd $AVD_NAME -no-skin -no-audio -no-window &
   # now we will wait for emulator
-  - android-wait-for-emulator
+  - wait-for-avd
   - adb shell input keyevent 26 &
   - adb shell input keyevent 82 &
 
