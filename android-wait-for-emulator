@@ -5,10 +5,13 @@
 set +e
 
 bootanim=""
+dateStart=$(date +"%s")
 failcounter=0
 until [[ "$bootanim" =~ "stopped" ]]; do
    bootanim=`adb -e shell getprop init.svc.bootanim 2>&1`
-   echo "$bootanim"
+   dateNow=$(date +"%s")
+   diff=$(($dateNow-$dateStart))
+   echo "$bootanim, in wait (min:sec): $(($diff / 60)):$(($diff % 60))" 
    if [[ "$bootanim" =~ "not found" ]]; then
       let "failcounter += 1"
       if [[ $failcounter -gt 15 ]]; then
