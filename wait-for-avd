@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Originally written by Ralf Kistner <ralf@embarkmobile.com>, but placed in the public domain
+
+set +e
+
+echo "======================================="
+echo "Custom Android Wait For Emulator Script"
+echo "======================================="
+
+bootanim=""
+laststatus=""
+dateStart=$(date +"%s")
+dateLast=$dateStart
+failcounter=0
+
+until [[ "$bootanim" =~ "stopped" ]]; do
+   bootanim=`adb -e shell getprop init.svc.bootanim 2>&1`
+   dateNow=$(date +"%s")
+
+   if [[ "$bootanim" =~ "$laststatus" ]]; then
+      diff=$(($dateNow-$dateLast))
+      echo -ne "..$diff"
+   else
+      echo -ne "..end-of-wait\n"
+      diff=$(($dateNow-$dateStart))
+      echo "new status: '$bootanim', total in wait $(($diff / 60)) min $(($diff % 60)) sec"
+      dateLast=$dateNow
+   fi
+   
+   if [[ "$bootanim" =~ "not found" ]]; then
+      let "failcounter += 1"
+      if [[ $failcounter -gt 15 ]]; then
+        echo "Failed to start emulator"
+        exit 1
+      fi
+   fi
+   
+   laststatus=$bootanim
+   sleep 1
+done
+
+# caclulate total wait time
+dateNow=$(date +"%s")
+diff=$(($dateNow-$dateStart))
+
+# display summary report
+echo "======================================="
+echo "Android Wait For Emulator Script: Done!"
+echo "Total in wait $(($diff / 60)):$(($diff % 60)) (min:sec)"
+echo "======================================="
