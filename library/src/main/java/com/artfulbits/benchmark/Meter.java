@@ -140,7 +140,7 @@ public final class Meter {
 
   /** Method used for timestamp value extracting. */
   @SuppressLint("NewApi")
-  private final long timestamp() {
+  private long timestamp() {
     final boolean apiLevel = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1);
 
     if (apiLevel && !getConfig().UseSystemNanos) {
@@ -337,7 +337,7 @@ public final class Meter {
     if (getConfig().ShowSummary) {
       log.log(Level.FINEST, config.OutputTag, DELIMITER);
 
-      // TODO: generate summary of tracking: top items by time, total time, total skipped time,
+      // generate summary of tracking: top items by time, total time, total skipped time,
       log.log(Level.INFO, config.OutputTag, String.format(Locale.US, "final: %.3f ms%s, steps: %d",
           toMillis(mCurrent.total() - totalSkipped),
           (totalSkipped > 1000) ? String.format(" (-%.3f ms)", toMillis(totalSkipped)) : "",
@@ -439,7 +439,9 @@ public final class Meter {
 
   /** Cleanup the class. */
   public void clear() {
-    mMeasures.clear();
+    synchronized (mMeasures) {
+      mMeasures.clear();
+    }
   }
 
 	/* [ CONSTRUCTORS ] ============================================================================================ */
@@ -633,7 +635,11 @@ public final class Meter {
      */
     public Measure(final Meter meter) {
       Parent = meter;
-      Id = Parent.mMeasures.size();
+
+      synchronized (Parent.mMeasures) {
+        Id = Parent.mMeasures.size();
+      }
+
       ThreadId = Thread.currentThread().getId();
       Start = Parent.timestamp();
 
@@ -643,9 +649,8 @@ public final class Meter {
     /** Get the last timestamp (maximum) of the measurement.  @return the long */
     public long theEnd() {
       final int totalTimes = Position.get();
-      final long end = Ranges[totalTimes - 1];
 
-      return end;
+      return Ranges[totalTimes - 1];
     }
 
     /** Get total time of measurement.  @return the long */
@@ -674,7 +679,7 @@ public final class Meter {
       } else if (isLoopEnd) {
         // into first part of bits we store step index for easier loop begin identifying
         final Integer loopIndex = LoopsQueue.poll();
-        final int order = (null == loopIndex) ? 0 : loopIndex.intValue();
+        final int order = (null == loopIndex) ? 0 : loopIndex;
         index = addStep(time, flags | order);
       } else if (isIteration) {
         index = addIteration(time, flags);
@@ -696,10 +701,13 @@ public final class Meter {
 
     private int addIteration(final long time, final long flags) {
       final int index = Position.get();
-      final Integer loop = LoopsQueue.peek();
+      final Integer loop;
+      final Loop loopInfo;
 
-      if (null != loop) {
-        Loops.get(loop).add(time, flags);
+      if (null != (loop = LoopsQueue.peek())) {
+        if (null != (loopInfo = Loops.get(loop))) {
+          loopInfo.add(time, flags);
+        }
       }
 
       return index;
@@ -766,7 +774,8 @@ public final class Meter {
       final String name = ((isLoop) ? "loop" : "step");
 
       // DONE: loop statistics should be displayed on the loop exit, not at the beginning
-      final String prefix = (isUnLoop ? Loops.get((int) custom).stats() : "");
+      final Loop loopInfo = (isUnLoop ? Loops.get((int) custom) : null);
+      final String prefix = (isUnLoop && null != loopInfo) ? loopInfo.stats() : "";
       final String body = (TextUtils.isEmpty(log) ? name + " #" + index : log);
       final String suffix = "";
 
@@ -846,7 +855,7 @@ public final class Meter {
       long loopTotal = Iterations[endPoint] - loopStart;
 
       long min = Long.MAX_VALUE, max = Long.MIN_VALUE;
-      long avg, total = 0, iteration, stepN = loopStart, stepM = loopStart;
+      long avg, total = 0, iteration, stepN = loopStart, stepM;
 
       for (int i = 0; i < Counter; i++) {
         int index = toArrayIndex(i, Position, Counter, Iterations.length);
@@ -872,10 +881,8 @@ public final class Meter {
       // "avg: %.3fms min: %.3fms max: %.3fms total:%.3fms calls:%d / "
       // "avg/min/max/total: %.3f/%.3f/%.3f/%.3f ms - calls:%d / "
 
-      final String line = String.format(Locale.US, "avg/min/max/total: %.3f/%.3f/%.3f/%.3f ms - calls:%d / ",
+      return String.format(Locale.US, "avg/min/max/total: %.3f/%.3f/%.3f/%.3f ms - calls:%d / ",
           toMillis(avg), toMillis(min), toMillis(max), toMillis(loopTotal), TotalCaptured);
-
-      return line;
     }
 
     /**
