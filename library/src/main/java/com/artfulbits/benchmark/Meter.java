@@ -167,8 +167,10 @@ public final class Meter {
    *
    * @return unique id of the benchmark object.
    */
-  private synchronized int start() {
-    mMeasures.add(mCurrent = new Measure(this));
+  private int start() {
+    synchronized (mMeasures) {
+      mMeasures.add(mCurrent = new Measure(this));
+    }
 
     if (getConfig().DoMethodsTrace) {
       Debug.startMethodTracing(getConfig().MethodsTraceFilePath);
@@ -259,7 +261,7 @@ public final class Meter {
    * Start the loop tracking.
    *
    * @param counter maximum number of iterations.
-   * @param log log message.
+   * @param log     log message.
    */
   public void loop(final int counter, final String log) {
     loop(counter);
@@ -337,9 +339,9 @@ public final class Meter {
 
       // TODO: generate summary of tracking: top items by time, total time, total skipped time,
       log.log(Level.INFO, config.OutputTag, String.format(Locale.US, "final: %.3f ms%s, steps: %d",
-              toMillis(mCurrent.total() - totalSkipped),
-              (totalSkipped > 1000) ? String.format(" (-%.3f ms)", toMillis(totalSkipped)) : "",
-              totalSteps));
+          toMillis(mCurrent.total() - totalSkipped),
+          (totalSkipped > 1000) ? String.format(" (-%.3f ms)", toMillis(totalSkipped)) : "",
+          totalSteps));
     }
 
     final PriorityQueue<Step> pq = new PriorityQueue<Step>(totalSteps, Step.Comparator);
@@ -352,7 +354,7 @@ public final class Meter {
       for (int i = 1, len = Math.min(pq.size(), config.ShowTopNLongest); i <= len; i++) {
         final Step step = pq.poll();
 
-        if (!step.IsSkipped) {
+        if (null != step && !step.IsSkipped) {
           log.log(Level.INFO, config.OutputTag, "top-" + i + ": " + step.toString());
         }
       }
@@ -383,8 +385,8 @@ public final class Meter {
    * Calculate percent value.
    *
    * @param value current value.
-   * @param min x-scale start point.
-   * @param max y-scale end point.
+   * @param min   x-scale start point.
+   * @param max   y-scale end point.
    * @return calculated percent value.
    */
   public static double percent(final long value, final long min, final long max) {
@@ -407,9 +409,11 @@ public final class Meter {
 	/* [FINISH] ==================================================================================================== */
 
   /** Remove from measurements stack last done tracking. Method switches current Measure instance to next in stack. */
-  public synchronized void pop() {
-    mMeasures.remove(mCurrent.Id);
-    mCurrent = (mMeasures.size() == 0) ? null : mMeasures.get(mMeasures.size() - 1);
+  public void pop() {
+    synchronized (mMeasures) {
+      mMeasures.remove(mCurrent.Id);
+      mCurrent = (mMeasures.size() == 0) ? null : mMeasures.get(mMeasures.size() - 1);
+    }
   }
 
   /**
@@ -449,8 +453,13 @@ public final class Meter {
   public static Meter getInstance() {
     final Thread key = Thread.currentThread();
 
+    // double check pattern
     if (!sThreadsToMeter.containsKey(key)) {
-      sThreadsToMeter.put(key, new Meter());
+      synchronized (sThreadsToMeter) {
+        if (!sThreadsToMeter.containsKey(key)) {
+          sThreadsToMeter.put(key, new Meter());
+        }
+      }
     }
 
     return sThreadsToMeter.get(key);
@@ -503,8 +512,8 @@ public final class Meter {
      * Log measure message with defined Level and tag.
      *
      * @param level the level of logging. (Mostly used for coloring the output)
-     * @param tag the tag (tag of the output)
-     * @param msg the message to display.
+     * @param tag   the tag (tag of the output)
+     * @param msg   the message to display.
      */
     void log(final Level level, final String tag, final String msg);
   }
@@ -585,9 +594,9 @@ public final class Meter {
     @Override
     public String toString() {
       return String.format(Locale.US,
-              "Calibrate [St/Be/Lg/Sk/Lo/Re/Un/En/Po]: %.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f ms",
-              toMillis(Start), toMillis(Beat), toMillis(Log), toMillis(Skip),
-              toMillis(Loop), toMillis(Recap), toMillis(UnLoop), toMillis(End), toMillis(Pop));
+          "Calibrate [St/Be/Lg/Sk/Lo/Re/Un/En/Po]: %.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f ms",
+          toMillis(Start), toMillis(Beat), toMillis(Log), toMillis(Skip),
+          toMillis(Loop), toMillis(Recap), toMillis(UnLoop), toMillis(End), toMillis(Pop));
     }
   }
 
@@ -647,7 +656,7 @@ public final class Meter {
     /**
      * Add int.
      *
-     * @param time the time
+     * @param time  the time
      * @param flags the flags
      * @return the int
      */
@@ -664,7 +673,9 @@ public final class Meter {
         index = addLoop(time, onlyFlags, counter);
       } else if (isLoopEnd) {
         // into first part of bits we store step index for easier loop begin identifying
-        index = addStep(time, flags | LoopsQueue.poll());
+        final Integer loopIndex = LoopsQueue.poll();
+        final int order = (null == loopIndex) ? 0 : loopIndex.intValue();
+        index = addStep(time, flags | order);
       } else if (isIteration) {
         index = addIteration(time, flags);
       } else {
@@ -685,9 +696,11 @@ public final class Meter {
 
     private int addIteration(final long time, final long flags) {
       final int index = Position.get();
-      final int loop = LoopsQueue.peek();
+      final Integer loop = LoopsQueue.peek();
 
-      Loops.get(loop).add(time, flags);
+      if (null != loop) {
+        Loops.get(loop).add(time, flags);
+      }
 
       return index;
     }
@@ -782,9 +795,9 @@ public final class Meter {
     /**
      * Create class with preallocated space for timestamp's on each iteration.
      *
-     * @param time the time
+     * @param time    the time
      * @param maxSize Number of expected iterations. If less than zero - class switch own mode to endless loops
-     * tracking.
+     *                tracking.
      */
     public Loop(final long time, final int maxSize) {
       final int size = Math.abs(maxSize);
@@ -798,7 +811,7 @@ public final class Meter {
     /**
      * Add time stamp of a new iteration.
      *
-     * @param time time stamp.
+     * @param time  time stamp.
      * @param flags time stamp flags.
      * @return index of iteration.
      */
@@ -860,7 +873,7 @@ public final class Meter {
       // "avg/min/max/total: %.3f/%.3f/%.3f/%.3f ms - calls:%d / "
 
       final String line = String.format(Locale.US, "avg/min/max/total: %.3f/%.3f/%.3f/%.3f ms - calls:%d / ",
-              toMillis(avg), toMillis(min), toMillis(max), toMillis(loopTotal), TotalCaptured);
+          toMillis(avg), toMillis(min), toMillis(max), toMillis(loopTotal), TotalCaptured);
 
       return line;
     }
@@ -868,10 +881,10 @@ public final class Meter {
     /**
      * Convert range [0..counter] to position in cycled array.
      *
-     * @param index index to convert.
+     * @param index    index to convert.
      * @param position current cycled position in array.
-     * @param count quantity of elements stored in array.
-     * @param length length of the array.
+     * @param count    quantity of elements stored in array.
+     * @param length   length of the array.
      * @return converted index;
      */
     public static int toArrayIndex(final int index, final int position, final int count, final int length) {
@@ -906,8 +919,9 @@ public final class Meter {
         // output: left equal right == 0
 
         // first exclude "bad data" situations
-        if (null == lhs || null == rhs)
+        if (null == lhs || null == rhs) {
           return (null == lhs) ? -1 : 1;
+        }
 
         // for skipped element shift there time to 0, that will make them last in list
         return -1 * Long.valueOf(lhs.Total - lhs.Skipped).compareTo(rhs.Total - rhs.Skipped);
@@ -939,8 +953,8 @@ public final class Meter {
      * Instantiates a new statistics Step.
      *
      * @param config current configuration
-     * @param m current measure instance
-     * @param index the step index
+     * @param m      current measure instance
+     * @param index  the step index
      */
     public Step(final Config config, final Measure m, final int index) {
       mConfig = config;
@@ -969,8 +983,8 @@ public final class Meter {
     /** Convert all statistics data to collection of parameters for string format.  @return the list */
     public List<Object> toParams() {
       final List<Object> params = (mConfig.ShowStepsGrid) ?
-              Meter.toParams(Times) :
-              new ArrayList<Object>(PREALLOCATE);
+          Meter.toParams(Times) :
+          new ArrayList<Object>(PREALLOCATE);
 
       if (mConfig.ShowStepCostPercents) {
         params.add(CostPercents);
