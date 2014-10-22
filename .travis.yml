@@ -42,7 +42,7 @@ addons:
 before_install:
   - ls -a
   - pwd
-  # display list of all possible components 
+  # display list of all possible components
   - android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
   # display list of installed emulators
   - android list targets | grep -e '^\(\(id:\)\|\( Tag\)\)'
@@ -95,5 +95,5 @@ script:
   # second run will be fast!
   - ./gradlew :samples:sample-01:connectedCheck -PdisablePreDex
 
-#after_success:
-#  - ./gradlew coveralls
+after_success:
+  - ./gradlew coveralls
