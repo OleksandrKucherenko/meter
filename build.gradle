@@ -26,6 +26,8 @@ allprojects {
         jcenter()
         mavenLocal()
         mavenCentral()
+	/* ATTACH CUSTOME BUILDS OF GRADLE PLUGINS FROM '~/gradle/prlugins' folder */
+	flatDir{ dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
 
     /* DEFINE GLOBAL VARIABLES */
