@@ -1,6 +1,7 @@
 // Library: meter, Android Micro Benchmarking
 
 apply plugin: 'com.android.library'
+apply plugin: 'jacoco'
 
 /* DEFINE REPOSITORY WITH LATEST ROBOLECTRIC VERSION */
 repositories {
@@ -25,6 +26,7 @@ dependencies {
 
         /* UNIT TESTS HAS DEPENDENCY ON SUPPORT LIB, SO INCLUDE IT MANUALLY FOR CONTROLLING THE VERSION OF IT */
         androidTestCompile "com.android.support:support-v4:${androidSupportLib}"
+//        androidTestCompile "org.jacoco:org.jacoco.agent:${JaCoCoVersion}:runtime"
 
         /* Hamcrest (v1.4) */
         androidTestCompile 'org.hamcrest:hamcrest-integration:+',
@@ -51,6 +53,14 @@ android {
 
         versionCode 1
         versionName "1.0"
+
+        /* default unit testing runner */
+        testInstrumentationRunner "android.test.InstrumentationTestRunner"
+    }
+
+    /* be specific about JaCoCo version. */
+    jacoco {
+        version JaCoCoVersion
     }
 
     buildTypes {
@@ -70,6 +80,11 @@ android {
             java.srcDirs = ['src/tests/java']
         }
     }
+}
+
+/* Enable JaCoCo integration */
+jacoco {
+    toolVersion = JaCoCoVersion
 }
 
 // set output binary version. format: {versionName}.{versionCode}.{gitRevision}
