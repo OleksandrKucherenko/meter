@@ -1,7 +1,20 @@
 // Library: meter, Android Micro Benchmarking
 
+buildscript {
+    repositories {
+        jcenter()
+        mavenLocal()
+        mavenCentral()
+    }
+    dependencies {
+        /* https://github.com/kt3k/coveralls-gradle-plugin */
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:+'
+    }
+}
+
 apply plugin: 'com.android.library'
 apply plugin: 'jacoco'
+apply plugin: 'com.github.kt3k.coveralls'
 
 /* DEFINE REPOSITORY WITH LATEST ROBOLECTRIC VERSION */
 repositories {
@@ -26,7 +39,6 @@ dependencies {
 
         /* UNIT TESTS HAS DEPENDENCY ON SUPPORT LIB, SO INCLUDE IT MANUALLY FOR CONTROLLING THE VERSION OF IT */
         androidTestCompile "com.android.support:support-v4:${androidSupportLib}"
-//        androidTestCompile "org.jacoco:org.jacoco.agent:${JaCoCoVersion}:runtime"
 
         /* Hamcrest (v1.4) */
         androidTestCompile 'org.hamcrest:hamcrest-integration:+',
@@ -87,6 +99,7 @@ jacoco {
     toolVersion = JaCoCoVersion
 }
 
-// set output binary version. format: {versionName}.{versionCode}.{gitRevision}
-version = android.defaultConfig.versionName + "." + android.defaultConfig.versionCode
+coveralls.jacocoReportPath = 'build/outputs/reports/coverage/debug/report.xml'
 
+// set output binary version. format: {versionName}.{versionCode}.{gitRevision}
+version = android.defaultConfig.versionName + "." + android.defaultConfig.versionCode + ".${GIT_REVISION}"

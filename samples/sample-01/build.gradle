@@ -5,12 +5,13 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 buildscript {
     repositories {
+        jcenter()
+        mavenLocal()
         mavenCentral()
     }
     dependencies {
         classpath 'org.robolectric:robolectric-gradle-plugin:+'
         /* https://github.com/kt3k/coveralls-gradle-plugin */
-//        classpath 'net.saliman:gradle-cobertura-plugin:2.0.0'
         classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:+'
     }
 }
@@ -19,7 +20,6 @@ buildscript {
 
 apply plugin: 'com.android.application'
 apply plugin: 'jacoco'
-//apply plugin: 'cobertura'
 apply plugin: 'com.github.kt3k.coveralls'
 
 /* DEFINE REPOSITORY WITH LATEST ROBOLECTRIC VERSION */
@@ -45,8 +45,6 @@ dependencies {
 
         /* UNIT TESTS HAS DEPENDENCY ON SUPPORT LIB, SO INCLUDE IT MANUALLY FOR CONTROLLING THE VERSION OF IT */
         androidTestCompile "com.android.support:support-v4:${androidSupportLib}"
-
-//        androidTestCompile "org.jacoco:org.jacoco.agent:${JaCoCoVersion}:runtime"
 
         if (useEspresso) {
             /* Espresso (v1.1) */
@@ -303,48 +301,6 @@ android {
 jacoco {
     toolVersion = JaCoCoVersion
 }
-
-// Define coverage source.
-// If you have rs/aidl etc... add them here.
-//def coverageSourceDirs = [
-//        'src/main/java',
-//        'src/gen'
-//]
-//
-//task jacocoTestReport(type: JacocoReport, dependsOn: "testDebug") {
-//    group = "Reporting"
-//    description = "Generate Jacoco coverage reports after running tests."
-//    reports {
-//        xml.enabled = true // coveralls plugin depends on xml format report
-//        html.enabled = true
-//    }
-//    // class R is used, but usage will not be covered, so ignore this class from report
-//    // This differs per plugin version (0.10 -> 0.11)
-//    // have very different fileTrees.
-//    // I have added rules to Ignore Dagger/Butterknife
-//    classDirectories = fileTree(
-//            dir: './build/intermediates/classes/debug',
-//            excludes: ['com/myapp/R*.class',
-//                       '**/*$InjectAdapter.class',
-//                       '**/*$ModuleAdapter.class',
-//                       '**/*$ViewInjector*.class'
-//            ])
-//    sourceDirectories = files(coverageSourceDirs)
-//    executionData = files('build/jacoco/testDebug.exec')
-//    // Bit hacky but fixes https://code.google.com/p/android/issues/detail?id=69174.
-//    // We iterate through the compiled .class tree and rename $$ to $.
-//    doFirst {
-//        new File('myapp/build/intermediates/classes/').eachFileRecurse { file ->
-//            if (file.name.contains('$$')) {
-//                file.renameTo(file.path.replace('$$', '$'))
-//            }
-//        }
-//    }
-//    afterEvaluate {
-//        // just clean up coveralls dashboard, following reports are not of interest
-//        testDebug.reports.junitXml.enabled = false
-//    }
-//}
 
 coveralls.jacocoReportPath = 'build/outputs/reports/coverage/debug/report.xml'
 
