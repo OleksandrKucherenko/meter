@@ -29,6 +29,11 @@ env:
     #- ANDROID_TARGET='Google Inc.:Google APIs:19' ANDROID_ABI=armeabi-v7a  AVD_NAME='test-google19-arm'
     #- ANDROID_TARGET='Google Inc.:Google APIs (x86 System Image):19' ANDROID_ABI=x86  AVD_NAME='test-google19-x86'
 
+# http://docs.travis-ci.com/user/caching/
+cache:
+  directories:
+    - $HOME/.gradle
+
 addons:
   coverity_scan:
     project:
