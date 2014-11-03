@@ -101,4 +101,5 @@ script:
   - ./gradlew connectedCheck -PdisablePreDex
 
 after_success:
-  - ./gradlew coveralls --info
+  # - ./gradlew :samples:sample-01:coveralls
+  - ./gradlew :library:coveralls
