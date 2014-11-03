@@ -5,10 +5,12 @@ buildscript {
         jcenter()
         mavenLocal()
         mavenCentral()
+	/* ATTACH CUSTOME BUILDS OF GRADLE PLUGINS FROM '~/gradle/prlugins' folder */
+	flatDir{ dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
     dependencies {
         /* https://github.com/kt3k/coveralls-gradle-plugin */
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:+'
+        classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
     }
 }
 
@@ -80,7 +82,7 @@ android {
             testCoverageEnabled true
         }
         release {
-            runProguard false
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

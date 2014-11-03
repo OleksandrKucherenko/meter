@@ -53,6 +53,7 @@ allprojects {
 
         /* CODE COVERAGE PLUGIN/TOOL VERSION */
         JaCoCoVersion = project.JACOCO_VERSION
+	CoverallsVersion = project.COVERALLS_VERSION
 
         /* dynamic calculation of git revision, its a part of the app version now */
         GIT_REVISION = "${gitRevision()}"
@@ -73,6 +74,7 @@ println 'Use Tests: ' + project.USE_TDD
 println 'Use Espresso: ' + project.USE_ESPRESSO
 println 'Use Robolectric: ' + project.USE_ROBOLECTRIC
 println 'JaCoCo Library: ' + project.JACOCO_VERSION
+println 'Coveralls Version: ' + project.COVERALLS_VERSION
 println 'Source code GIT Revision: ' + "${gitRevision()}"
 println new String(new char[80]).replace("\0", "-")
 

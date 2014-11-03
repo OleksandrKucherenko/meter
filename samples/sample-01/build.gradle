@@ -8,11 +8,13 @@ buildscript {
         jcenter()
         mavenLocal()
         mavenCentral()
+	/* ATTACH CUSTOME BUILDS OF GRADLE PLUGINS FROM '~/gradle/prlugins' folder */
+	flatDir{ dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
     dependencies {
         classpath 'org.robolectric:robolectric-gradle-plugin:+'
         /* https://github.com/kt3k/coveralls-gradle-plugin */
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:+'
+        classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
     }
 }
 
@@ -26,6 +28,14 @@ apply plugin: 'com.github.kt3k.coveralls'
 repositories {
     mavenCentral()
 }
+
+/*
+configurations.all {
+    resolutionStrategy {
+        force 'org.apache.httpcomponents:httpmime:4.1'
+    }
+}
+*/
 
 dependencies {
     /* ----------------------------- */
@@ -192,28 +202,29 @@ android {
         release {
             signingConfig signingConfigs.release
 
-            runProguard true
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         // debug configuration with custom debug key
         debug {
             signingConfig signingConfigs.debug
 
-            runProguard false
+            minifyEnabled false
             debuggable true
-            jniDebugBuild true
+            jniDebuggable true
             testCoverageEnabled true
         }
         // release without obfuscation
         noProguardRelease.initWith(buildTypes.release)
         noProguardRelease {
-            runProguard false
+            minifyEnabled false
         }
         // release with enabled debug options
         debuggableRelease.initWith(buildTypes.noProguardRelease)
         debuggableRelease {
             debuggable true
-            jniDebugBuild true
+            jniDebuggable true
         }
     }
 
