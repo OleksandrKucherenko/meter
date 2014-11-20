@@ -18,7 +18,7 @@ env:
     # Define encrypted EMAIL variable
     - secure: "bvDKEsJGhkVHblojj+5da5C6z7Hy93irYJZMtdsNZeiT9eERS9qVXbOgbMAWobNu2SGIA9Ce3hRA4SQ1Y2tWWltrQP54E40nWCcWSZWievRk6UL9JmSkrDf9/tyDKDJo+KnDBLF73MB9tEWaxscYdHCALXnGcoIPRoGACL1BCuA="
     # Define encrypted COVERALLS_REPO_TOKEN variable
-    - secure: "NO1orR9cZgKB6qLMdfwj2+Mh5has9FFFwIxkNadpK6gjhCR/GOCrQLPqEi5BvX4o5fDV8M01rW0dOoRlgOne4pFIXfuQY6rdVaUDYtTQajx1bEvnTQntY15Fj3Bmi8GDVlgIMkuSJmK62brT8oOderOyOYV5QHgVxOtcznIzAhI="
+    #- secure: "NO1orR9cZgKB6qLMdfwj2+Mh5has9FFFwIxkNadpK6gjhCR/GOCrQLPqEi5BvX4o5fDV8M01rW0dOoRlgOne4pFIXfuQY6rdVaUDYtTQajx1bEvnTQntY15Fj3Bmi8GDVlgIMkuSJmK62brT8oOderOyOYV5QHgVxOtcznIzAhI="
     # say gradle to output without color codes, the same as add switch --no-color
     - TERM=dumb
   matrix:
@@ -29,6 +29,11 @@ env:
     #- ANDROID_TARGET='Google Inc.:Google APIs:19' ANDROID_ABI=armeabi-v7a  AVD_NAME='test-google19-arm'
     #- ANDROID_TARGET='Google Inc.:Google APIs (x86 System Image):19' ANDROID_ABI=x86  AVD_NAME='test-google19-x86'
 
+# http://docs.travis-ci.com/user/caching/
+cache:
+  directories:
+    - $HOME/.gradle
+
 addons:
   coverity_scan:
     project:
@@ -36,7 +41,7 @@ addons:
       description: "Micro-benchmarking tool for Android projects."
     notification_email: $EMAIL
     build_command_prepend: "./gradlew clean --info --no-color"
-    build_command:   "./gradlew assembleDebug --info --no-color -PdisablePreDex"
+    build_command: "./gradlew assembleDebug --info --no-color -PdisablePreDex"
     branch_pattern: master
 
 before_install:
@@ -83,6 +88,8 @@ before_script:
   # Create and start emulator
   - echo "${ANDROID_TARGET}", "${ANDROID_ABI}", "${AVD_NAME}"
   - echo no | android create avd --force -n "$AVD_NAME" -t "$ANDROID_TARGET" --abi "$ANDROID_ABI"
+  # before executing the emulator run gradle with "warmup" task in background mode
+  - ./gradlew dependencyUpdates >/dev/null 2>/dev/null &
   - emulator -avd $AVD_NAME -no-skin -no-audio -no-window >/dev/null 2>/dev/null &
   # now we will wait for emulator
   - ./wait-for-avd
@@ -93,7 +100,8 @@ script:
   # lets compile the project during the emulator startup
   #- ./gradlew assembleDebug assembleDebugTest --info -PdisablePreDex
   # second run will be fast!
-  - ./gradlew connectedCheck -PdisablePreDex
+  - travis_retry ./gradlew build connectedCheck -PdisablePreDex
 
 after_success:
-  - ./gradlew coveralls --info
+  # - ./gradlew :samples:sample-01:coveralls
+  - ./gradlew :library:coveralls
