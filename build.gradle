@@ -4,12 +4,11 @@ buildscript {
     /* GLOBAL REPOSITORIES FOR BUILD SCRIPT, DEPENDENCIES SERVERS */
     repositories {
         jcenter()
-        mavenLocal()
+//        mavenLocal()
         mavenCentral()
     }
     /* REFERENCES ON BUILD PLUGINS */
     dependencies {
-        classpath 'com.android.tools.build:gradle:+'
         classpath 'com.github.ben-manes:gradle-versions-plugin:+'
     }
 }
@@ -23,11 +22,11 @@ def gitRevision() {
 allprojects {
     /* DEFINE REPOSITORIES FOR SUB-PROJECTS */
     repositories {
-        jcenter()
-        mavenLocal()
+//        jcenter()
+//        mavenLocal()
         mavenCentral()
-	/* ATTACH CUSTOME BUILDS OF GRADLE PLUGINS FROM '~/gradle/prlugins' folder */
-	flatDir{ dirs rootProject.projectDir.toString() + '/gradle/plugins' }
+        /* ATTACH CUSTOM BUILDS OF GRADLE PLUGINS FROM '~/gradle/plugins' folder */
+//        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
 
     /* DEFINE GLOBAL VARIABLES */
@@ -53,7 +52,7 @@ allprojects {
 
         /* CODE COVERAGE PLUGIN/TOOL VERSION */
         JaCoCoVersion = project.JACOCO_VERSION
-	CoverallsVersion = project.COVERALLS_VERSION
+        CoverallsVersion = project.COVERALLS_VERSION
 
         /* dynamic calculation of git revision, its a part of the app version now */
         GIT_REVISION = "${gitRevision()}"

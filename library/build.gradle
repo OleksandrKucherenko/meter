@@ -2,20 +2,20 @@
 
 buildscript {
     repositories {
-        jcenter()
-        mavenLocal()
+//        jcenter()
+//        mavenLocal()
         mavenCentral()
-	/* ATTACH CUSTOME BUILDS OF GRADLE PLUGINS FROM '~/gradle/prlugins' folder */
-	flatDir{ dirs rootProject.projectDir.toString() + '/gradle/plugins' }
+        /* ATTACH CUSTOME BUILDS OF GRADLE PLUGINS FROM '~/gradle/prlugins' folder */
+//        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
     dependencies {
+        classpath 'com.android.tools.build:gradle:0.14.4'
         /* https://github.com/kt3k/coveralls-gradle-plugin */
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
     }
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'jacoco'
 apply plugin: 'com.github.kt3k.coveralls'
 
 /* DEFINE REPOSITORY WITH LATEST ROBOLECTRIC VERSION */
@@ -68,8 +68,10 @@ android {
         versionCode 1
         versionName "1.0"
 
-        /* default unit testing runner */
-        testInstrumentationRunner "android.test.InstrumentationTestRunner"
+        if (useTesting) {
+            /* default unit testing runner */
+            testInstrumentationRunner "android.test.InstrumentationTestRunner"
+        }
     }
 
     /* be specific about JaCoCo version. */
@@ -93,12 +95,27 @@ android {
             // default path is '~/java'
             java.srcDirs = ['src/tests/java']
         }
-    }
-}
 
-/* Enable JaCoCo integration */
-jacoco {
-    toolVersion = JaCoCoVersion
+        debug.setRoot('build-types/debug')
+        release.setRoot('build-types/release')
+    }
+
+    /* EXCLUDE SOME UNNEEDED FILES FROM PACKAGE */
+    packagingOptions {
+        exclude 'LICENSE.txt'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LGPL2.1'
+        exclude '.readme'
+        exclude '.README'
+    }
 }
 
 coveralls.jacocoReportPath = 'build/outputs/reports/coverage/debug/report.xml'

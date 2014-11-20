@@ -10,14 +10,11 @@
         android:targetSdkVersion="19"/>
 
     <!-- Define instrumentation -->
+    <!--suppress AndroidDomInspection -->
     <instrumentation
         android:name="com.google.android.apps.common.testing.testrunner.GoogleInstrumentationTestRunner"
         android:targetPackage="com.artfulbits.benchmark.sample"
-        android:handleProfiling="false"
-        android:functionalTest="false"
-        android:label="Tests of Meter Library - 01"
-        tools:replace="android:label"/>
-
+        tools:replace="android:targetPackage"/>
 
     <!-- Required permissions -->
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -32,12 +29,12 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
 
-    <!-- Airplain mode control -->
+    <!-- Airplane mode control -->
     <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"/>
 
     <application
-        android:label="Meter Library Tests - 01">
+        android:label="Meter Library, Sample Tests - 01">
         <uses-library android:name="android.test.runner"/>
     </application>
 
