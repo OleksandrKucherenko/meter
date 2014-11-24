@@ -59,9 +59,9 @@ before_install:
 # For a full list, run `android list sdk -a --extended`
 android:
   components:
-    - platform-tools
     #- build-tools-19.1.0
     #- android-19
+    - platform-tools
     - extra-android-support
     - extra-android-m2repository
     - extra-google-m2repository

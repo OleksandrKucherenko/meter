@@ -211,6 +211,7 @@ android {
             signingConfig signingConfigs.debug
 
             minifyEnabled false
+            shrinkResources false
             debuggable true
             jniDebuggable true
             testCoverageEnabled true
@@ -219,6 +220,7 @@ android {
         noProguardRelease.initWith(buildTypes.release)
         noProguardRelease {
             minifyEnabled false
+            shrinkResources false
         }
         // release with enabled debug options
         debuggableRelease.initWith(buildTypes.noProguardRelease)

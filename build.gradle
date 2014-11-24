@@ -4,7 +4,7 @@ buildscript {
     /* GLOBAL REPOSITORIES FOR BUILD SCRIPT, DEPENDENCIES SERVERS */
     repositories {
         jcenter()
-//        mavenLocal()
+        mavenLocal()
         mavenCentral()
     }
     /* REFERENCES ON BUILD PLUGINS */
@@ -35,8 +35,8 @@ def gitRevision() {
 allprojects {
     /* DEFINE REPOSITORIES FOR SUB-PROJECTS */
     repositories {
-//        jcenter()
-//        mavenLocal()
+        jcenter()
+        mavenLocal()
         mavenCentral()
         /* ATTACH CUSTOM BUILDS OF GRADLE PLUGINS FROM '~/gradle/plugins' folder */
 //        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
