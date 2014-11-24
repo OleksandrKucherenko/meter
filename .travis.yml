@@ -41,7 +41,7 @@ addons:
       description: "Micro-benchmarking tool for Android projects."
     notification_email: $EMAIL
     build_command_prepend: "./gradlew clean --info --no-color"
-    build_command: "./gradlew assembleDebug --info --no-color -PdisablePreDex"
+    build_command: "./gradlew assembleDebug --info --no-color"
     branch_pattern: master
 
 before_install:
@@ -100,7 +100,7 @@ script:
   # lets compile the project during the emulator startup
   #- ./gradlew assembleDebug assembleDebugTest --info -PdisablePreDex
   # second run will be fast!
-  - travis_retry ./gradlew build connectedCheck -PdisablePreDex
+  - travis_retry ./gradlew build connectedCheck --info
 
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
