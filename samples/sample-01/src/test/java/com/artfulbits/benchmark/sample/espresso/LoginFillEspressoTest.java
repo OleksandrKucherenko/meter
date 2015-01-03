@@ -6,11 +6,11 @@ import android.test.suitebuilder.annotation.Suppress;
 import com.artfulbits.benchmark.sample.MainActivity;
 import com.artfulbits.benchmark.sample.R;
 
-import static com.google.android.apps.common.testing.ui.espresso.Espresso.onView;
-import static com.google.android.apps.common.testing.ui.espresso.action.ViewActions.typeText;
-import static com.google.android.apps.common.testing.ui.espresso.assertion.ViewAssertions.matches;
-import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMatchers.withId;
-import static com.google.android.apps.common.testing.ui.espresso.matcher.ViewMatchers.withText;
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.typeText;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 /** Default Android tests. */
 @Suppress
@@ -29,9 +29,9 @@ public class LoginFillEspressoTest extends ActivityInstrumentationTestCase2<Main
 
   public void test_00_CreateActivity() {
     onView(withId(R.id.tv_login))
-            .check(matches(withText(R.string.labelLogin)));
+        .check(matches(withText(R.string.labelLogin)));
 
     onView(withId(R.id.et_login))
-            .perform(typeText("developer"));
+        .perform(typeText("developer"));
   }
 }
