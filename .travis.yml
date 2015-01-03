@@ -100,7 +100,8 @@ script:
   # lets compile the project during the emulator startup
   #- ./gradlew assembleDebug assembleDebugTest --info -PdisablePreDex
   # second run will be fast!
-  - travis_retry ./gradlew build connectedCheck --info
+  #- travis_retry ./gradlew build connectedCheck --info
+  - ./gradlew build connectedCheck --info
 
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
