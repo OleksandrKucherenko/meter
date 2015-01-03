@@ -9,7 +9,7 @@ buildscript {
 //        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.14.4'
+        classpath 'com.android.tools.build:gradle:1.0.0'
         /* https://github.com/kt3k/coveralls-gradle-plugin */
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
     }
@@ -47,12 +47,12 @@ dependencies {
                 'org.hamcrest:hamcrest-core:+',
                 'org.hamcrest:hamcrest-library:+'
 
-        /* Mockito (v1.10.8) */
-        androidTestCompile 'org.mockito:mockito-core:+'
-        androidTestCompile 'com.google.dexmaker:dexmaker-mockito:+'
+        /* Mockito (v2.0.2-beta) */
+        androidTestCompile 'org.mockito:mockito-core:+',
+                'com.google.dexmaker:dexmaker-mockito:+'
 
-        /* jUnit (v4.12 beta 2) */
-        androidTestCompile('junit:junit:+') { exclude module: 'hamcrest-core' }
+        /* jUnit (v4.12) */
+        androidTestCompile('junit:junit:4.12') { exclude module: 'hamcrest-core' }
     }
 }
 
@@ -64,6 +64,7 @@ android {
     defaultConfig {
         minSdkVersion androidMinSdkVersion
         targetSdkVersion androidTargetSdkVersion
+        /*useJack true*/
 
         versionCode 1
         versionName "1.0"
@@ -82,9 +83,11 @@ android {
     buildTypes {
         debug {
             testCoverageEnabled true
+            shrinkResources false /* incompatible with useJack !!! */
         }
         release {
             minifyEnabled false
+            shrinkResources false /* incompatible with useJack !!! */
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
