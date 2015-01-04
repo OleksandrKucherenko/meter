@@ -2,16 +2,21 @@
 
 buildscript {
     repositories {
-//        jcenter()
-//        mavenLocal()
+        jcenter()
+        mavenLocal()
         mavenCentral()
         /* ATTACH CUSTOME BUILDS OF GRADLE PLUGINS FROM '~/gradle/prlugins' folder */
-//        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
+        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:1.0.0'
         /* https://github.com/kt3k/coveralls-gradle-plugin */
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
+        /* https://github.com/bintray/gradle-bintray-plugin
+         * https://github.com/bintray/bintray-examples/blob/master/gradle-aar-example/build.gradle */
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:+'
+        /* Allows project artifacts to be deployed to a Maven repository, or installed to the local Maven cache. */
+        classpath 'com.github.dcendents:android-maven-plugin:+'
     }
 }
 
@@ -119,9 +124,120 @@ android {
         exclude '.readme'
         exclude '.README'
     }
+
+    /* Adjust library output naming */
+    libraryVariants.all { variant ->
+        variant.outputs.each { output ->
+            def outputFile = output.outputFile
+
+            if (outputFile != null && outputFile.name.endsWith('.aar')) {
+                def name = variant.buildType.name
+                def fileName = "${LIBRARY_ARTIFACT}-${version}-${name}.aar"
+                output.outputFile = new File(outputFile.parent, fileName)
+
+                // dump into logs final filename
+                def log = "Library variant.outputs output file name: '${fileName}'"
+                rootProject.logger.lifecycle(log)
+            }
+        }
+    }
 }
 
 coveralls.jacocoReportPath = 'build/outputs/reports/coverage/debug/report.xml'
 
+/* MAVEN REPOSITORY PUBLISHING */
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
+
 // set output binary version. format: {versionName}.{versionCode}.{gitRevision}
 version = android.defaultConfig.versionName + "." + android.defaultConfig.versionCode + ".${GIT_REVISION}"
+group = LIBRARY_GROUP /* com.artfulbits */
+
+/* https://github.com/bintray/bintray-examples/blob/master/gradle-aar-example/build.gradle */
+bintray {
+    /* Set to False for making publishing a real thing. */
+    dryRun = PUBLISHING_DRY_RUN
+
+    //apiUrl = "https://api.bintray.net"
+    user = USER_NAME
+    key = BINTRAY_API_KEY
+    configurations = ['archives']
+
+    /*
+      curl -T <FILE.EXT> -ukucherenko-alex:<API_KEY>
+        https://api.bintray.com/content/kucherenko-alex/android/<UR_COOL_PACKAGE_NAME>/<VERSION_NAME>/<FILE_TARGET_PATH>
+    */
+    pkg {
+        repo = 'android' /* Hardcoded!!! Create repository first in Bintray Admin UI! */
+        name = "${LIBRARY_GROUP}:${LIBRARY_ARTIFACT}" /* com.artfulbits:meter */
+        desc = LIBRARY_DESC
+
+        websiteUrl = LIBRARY_URL
+        issueTrackerUrl = "${LIBRARY_URL}/issues"
+        vcsUrl = LIBRARY_GIT
+
+        licenses = ['Apache-2.0']
+        labels = ['aar', 'android', 'microbenchmark', 'benchmark']
+
+        publicDownloadNumbers = true
+    }
+}
+
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging "${LIBRARY_PKG}"
+                name LIBRARY_NAME
+                description LIBRARY_DESC
+                url LIBRARY_URL
+                artifactId LIBRARY_ARTIFACT
+
+                /* Publishing License */
+                licenses {
+                    license {
+                        name LIBRARY_LIC
+                        url LIBRARY_LIC_URL
+                        distribution 'repo'
+                    }
+                }
+                /* Developers of the library */
+                developers {
+                    developer {
+                        id USER_NAME
+                        name USER_FULL
+                        email USER_EMAIL
+                    }
+                }
+                /* Source Code Management Info */
+                scm {
+                    url "scm:${LIBRARY_GIT}"
+                    connection "scm:${LIBRARY_GIT}"
+                    developerConnection "scm:${LIBRARY_GIT}"
+                }
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    exclude '**/R.html', '**/R.*.html', '**/index.html'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    /* The Java plug-in introduces six configurations: archives, default, compile, runtime, testCompile, testRuntime */
+    archives javadocJar
+    archives sourcesJar
+}

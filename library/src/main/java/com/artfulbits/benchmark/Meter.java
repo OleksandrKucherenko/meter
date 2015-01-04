@@ -70,7 +70,11 @@ public final class Meter {
     return mConfig;
   }
 
-  /** Get instance of the output logger. */
+  /**
+   * Get instance of the output logger.
+   *
+   * @return Instance of the Output provider.
+   */
   public Output getOutput() {
     if (null == mLog) {
       mLog = new Output() {
@@ -94,7 +98,11 @@ public final class Meter {
     return mLog;
   }
 
-  /** Set custom output instance. Set <code>null</code> to reset to logcat output. */
+  /**
+   * Set custom output instance. Set <code>null</code> to reset to logcat output.
+   *
+   * @param out set another instance of the output provider, set {@code null} if you want to reset it to default.
+   */
   public void setOutput(final Output out) {
     mLog = out;
   }
@@ -451,7 +459,11 @@ public final class Meter {
     // do nothing, just keep the protocol of calls safe
   }
 
-  /** Get instance of Meter class for current thread.  @return the instance */
+  /**
+   * Get instance of Meter class for current thread.
+   *
+   * @return the instance of Meter for current thread.
+   */
   public static Meter getInstance() {
     final Thread key = Thread.currentThread();
 

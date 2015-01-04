@@ -1,6 +1,5 @@
 // Application: Sample-01
 
-
 import org.apache.tools.ant.taskdefs.condition.Os
 
 buildscript {
@@ -149,7 +148,10 @@ android {
 
             if (useEspresso) {
                 /* attach espresso runner */
-                testInstrumentationRunner "com.google.android.apps.common.testing.testrunner.GoogleInstrumentationTestRunner"
+                /* v1.0 */
+                // testInstrumentationRunner "com.google.android.apps.common.testing.testrunner.GoogleInstrumentationTestRunner"
+                /* v2.0 */
+                testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
             } else {
                 /* default unit testing runner */
                 testInstrumentationRunner "android.test.InstrumentationTestRunner"

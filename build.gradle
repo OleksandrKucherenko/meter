@@ -39,16 +39,16 @@ allprojects {
         mavenLocal()
         mavenCentral()
         /* ATTACH CUSTOM BUILDS OF GRADLE PLUGINS FROM '~/gradle/plugins' folder */
-//        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
+        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
 
     /* DEFINE GLOBAL VARIABLES */
     ext {
         androidCompileSdkVersion = Integer.parseInt(project.ANDROID_BUILD_SDK_VERSION)
-        androidBuildToolsVersion = project.ANDROID_BUILD_TOOLS_VERSION /* latest: "20.0.0" */
+        androidBuildToolsVersion = project.ANDROID_BUILD_TOOLS_VERSION
 
         /* specify versions of 3rd party libs to use in project */
-        androidSupportLib = project.ANDROID_SUPPORT_LIB_VERSION /* latest: v21.0.0-rc1 is only for Android-L */
+        androidSupportLib = project.ANDROID_SUPPORT_LIB_VERSION
 
         /* MIN and TARGET SDKs for our binaries */
         androidTargetSdkVersion = Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
@@ -69,6 +69,24 @@ allprojects {
 
         /* dynamic calculation of git revision, its a part of the app version now */
         GIT_REVISION = "${gitRevision()}"
+
+        /* Maven Publishing - Bintray Credentials */
+        USER_NAME = project.USER_NAME
+        USER_EMAIL = project.USER_EMAIL
+        USER_FULL = project.USER_FULL
+        BINTRAY_API_KEY = project.BINTRAY_API_KEY
+
+        /* Maven Publishing - Library Meta Info */
+        LIBRARY_PKG = project.LIBRARY_PKG
+        LIBRARY_GROUP = project.LIBRARY_GROUP
+        LIBRARY_ARTIFACT = project.LIBRARY_ARTIFACT
+        LIBRARY_NAME = project.LIBRARY_NAME
+        LIBRARY_DESC = project.LIBRARY_DESC
+        LIBRARY_URL = project.LIBRARY_URL
+        LIBRARY_GIT = project.LIBRARY_GIT
+        LIBRARY_LIC = project.LIBRARY_LIC
+        LIBRARY_LIC_URL = project.LIBRARY_LIC_URL
+        PUBLISHING_DRY_RUN = Boolean.parseBoolean(project.PUBLISHING_DRY_RUN)
     }
 
     /* ATTACH DEPENDENCY UPDATE VERSION REPORT PLUGIN */
@@ -109,3 +127,9 @@ println new String(new char[80]).replace("\0", "-")
 //
 // [4] profile build performance:
 // > gradle clean assembleDebug --profile
+//
+// [5] upload to Bintray
+// > gradle bintrayUpload
+//
+// [6] upload to local Maven cache
+// > gradle install

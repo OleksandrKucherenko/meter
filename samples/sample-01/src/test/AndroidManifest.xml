@@ -12,7 +12,7 @@
     <!-- Define instrumentation -->
     <!--suppress AndroidDomInspection -->
     <instrumentation
-        android:name="com.google.android.apps.common.testing.testrunner.GoogleInstrumentationTestRunner"
+        android:name="android.support.test.runner.AndroidJUnitRunner"
         android:targetPackage="com.artfulbits.benchmark.sample"
         tools:replace="android:targetPackage"/>
 
