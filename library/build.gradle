@@ -3,13 +3,13 @@
 buildscript {
     repositories {
         jcenter()
-        mavenLocal()
-        mavenCentral()
+//        mavenLocal()
+//        mavenCentral()
         /* ATTACH CUSTOME BUILDS OF GRADLE PLUGINS FROM '~/gradle/prlugins' folder */
-        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
+//        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.0.0'
+        classpath 'com.android.tools.build:gradle:1.+'
         /* https://github.com/kt3k/coveralls-gradle-plugin */
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
         /* https://github.com/bintray/gradle-bintray-plugin
@@ -57,7 +57,7 @@ dependencies {
                 'com.google.dexmaker:dexmaker-mockito:+'
 
         /* jUnit (v4.12) */
-        androidTestCompile('junit:junit:4.12') { exclude module: 'hamcrest-core' }
+        androidTestCompile('junit:junit:+') { exclude module: 'hamcrest-core' }
     }
 }
 

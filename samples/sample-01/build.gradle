@@ -5,13 +5,13 @@ import org.apache.tools.ant.taskdefs.condition.Os
 buildscript {
     repositories {
         jcenter()
-        mavenLocal()
-        mavenCentral()
+//        mavenLocal()
+//        mavenCentral()
         /* ATTACH CUSTOM BUILDS OF GRADLE PLUGINS FROM '~/gradle/plugins' folder */
-        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
+//        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.0.0'
+        classpath 'com.android.tools.build:gradle:1.+'
         classpath 'org.robolectric:robolectric-gradle-plugin:+'
         /* https://github.com/kt3k/coveralls-gradle-plugin */
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
@@ -32,7 +32,9 @@ dependencies {
     /* ----------------------------- */
     /* RELEASE and DEBUG COMPILATION */
     /* ----------------------------- */
+    compile "com.android.support:support-v4:${androidSupportLib}"
     compile "com.android.support:appcompat-v7:${androidSupportLib}"
+//    compile 'com.android.support:multidex:1.0.0'
     compile project(':library')
 
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -46,63 +48,35 @@ dependencies {
 
         /* UNIT TESTS HAS DEPENDENCY ON SUPPORT LIB, SO INCLUDE IT MANUALLY FOR CONTROLLING THE VERSION OF IT */
         androidTestCompile "com.android.support:support-v4:${androidSupportLib}"
-
-        if (useEspresso) {
-            /* Espresso (v1.1) */
-            // ALTERNATIVE:
-            //   androidTestCompile files("${rootProject.rootDir}/samples/_libs/espresso/espresso-contrib-1.1-bundled.jar")
-//            androidTestCompile files("${rootProject.rootDir}/samples/_libs/espresso/espresso-1.1.jar")
-//            androidTestCompile files("${rootProject.rootDir}/samples/_libs/espresso/testrunner-1.1.jar")
-//            androidTestCompile files("${rootProject.rootDir}/samples/_libs/espresso/testrunner-runtime-1.1.jar")
-            androidTestCompile 'com.android.support.test.espresso:espresso-core:2.0',
-                    'com.android.support.test:testing-support-lib:0.1'
-        }
+//        androidTestCompile 'com.android.support:multidex-instrumentation:1.0.0'
 
         /* Hamcrest (v1.4) */
-        // ALTERNATIVE:
-        //    androidTestCompile files(
-        //            '../_libs/hamcrest/hamcrest-core-1.3.jar',
-        //            '../_libs/hamcrest/hamcrest-library-1.3.jar',
-        //            '../_libs/hamcrest/hamcrest-integration-1.3.jar')
         androidTestCompile 'org.hamcrest:hamcrest-core:+',
-                'org.hamcrest:hamcrest-integration:+',
-                'org.hamcrest:hamcrest-library:+'
+                'org.hamcrest:hamcrest-library:+',
+                'org.hamcrest:hamcrest-integration:+'
 
         /* Dagger (v1.2.2) */
-        // ALTERNATIVE:
-        //    androidTestCompile files('../_libs/dagger-1.2.2.jar')
-        // ORIGINAL:
         androidTestCompile 'com.squareup.dagger:dagger:+'
 
         /* Mockito (v2.0.2-beta) */
-        // ALTERNATIVE:
-        //    androidTestCompile files('../_libs/mockito-all-1.9.5.jar')
-        // ORIGINAL:
         androidTestCompile 'org.mockito:mockito-core:+',
                 'com.google.dexmaker:dexmaker-mockito:+'
 
         /* Fest Android (v1.0.8), fest util (v1.2.5), Fest core (v 2.0M10) */
-        // ALTERNATIVE:
-        //    androidTestCompile files(
-        //            '../_libs/fest/fest-assert-core-2.0M10.jar',
-        //            '../_libs/fest/fest-util-1.2.5.jar',
-        //            '../_libs/fest/fest-android-1.0.8.jar')
-        androidTestCompile('com.squareup:fest-android:+') {
-            exclude group: 'com.android.support', module: 'support-v4'
-        }
+        androidTestCompile 'com.squareup:fest-android:+@aar'
 
         /* jUnit (v4.12) */
-        // ALTERNATIVE:
-        //    androidTestCompile files('../_libs/junit-4.12.jar')
-        androidTestCompile('junit:junit:4.12') {
-            exclude module: 'hamcrest-core'
+        androidTestCompile 'junit:junit:+'
+
+        if (useEspresso) {
+            /* Espresso (v2.0) */
+            androidTestCompile 'com.android.support.test:testing-support-lib:+',
+                    'com.android.support.test.espresso:espresso-core:+',
+                    'com.android.support.test.espresso:espresso-contrib:+'
         }
 
         if (useRobolectric) {
             /* Robolectric (v2.4) */
-            // ALTERNATIVE:
-            //    androidTestCompile files(
-            //            '../_libs/robolectric-2.4.jar')
             androidTestCompile('org.robolectric:robolectric:+') {
                 exclude module: 'classworlds'
                 exclude module: 'commons-logging'
@@ -139,6 +113,7 @@ android {
         targetSdkVersion androidTargetSdkVersion
         /*useJack true*/
 
+        multiDexEnabled false
         applicationId 'com.artfulbits.benchmark.sample'
         versionCode 1
         versionName "1.0"
@@ -155,6 +130,7 @@ android {
             } else {
                 /* default unit testing runner */
                 testInstrumentationRunner "android.test.InstrumentationTestRunner"
+//                testInstrumentationRunner "android.support.multidex.MultiDexTestRunner"
             }
         }
     }
@@ -207,8 +183,8 @@ android {
         release {
             signingConfig signingConfigs.release
 
-            minifyEnabled true
-            shrinkResources false /* incompatible with useJack !!! */
+            minifyEnabled false
+            shrinkResources false /* !!! incompatible with useJack !!! */
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         // debug configuration with custom debug key
@@ -250,6 +226,8 @@ android {
         exclude 'META-INF/LGPL2.1'
         exclude '.readme'
         exclude '.README'
+        exclude 'LICENSE'
+        exclude 'NOTICE'
     }
 
     /* be specific about JaCoCo version. */
@@ -259,8 +237,9 @@ android {
 
     /* GIVE DEX MORE MEMORY */
     dexOptions {
-        preDexLibraries true
-        incremental true
+//        incremental true
+//        jumboMode true
+        preDexLibraries false
         javaMaxHeapSize "4g"
     }
 

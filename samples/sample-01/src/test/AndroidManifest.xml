@@ -33,8 +33,9 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"/>
 
+    <!--android:name="android.support.multidex.MultiDexApplication"-->
     <application
-        android:label="Meter Library, Sample Tests - 01">
+        android:label="Meter - Sample 01 - Tests">
         <uses-library android:name="android.test.runner"/>
     </application>
 

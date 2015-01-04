@@ -7,7 +7,10 @@ import android.os.Build;
 import android.os.StrictMode;
 import android.os.StrictMode.ThreadPolicy;
 import android.test.AndroidTestCase;
+import android.test.suitebuilder.annotation.Suppress;
 import android.util.Log;
+
+import org.junit.Ignore;
 
 import java.lang.reflect.Method;
 
@@ -36,7 +39,7 @@ import java.lang.reflect.Method;
  * </ul>
  */
 public abstract class TestCase
-        extends AndroidTestCase {
+    extends AndroidTestCase {
   /* [ CONSTANTS ] ================================================================================================= */
 
   /** default class log tag. */
@@ -100,7 +103,12 @@ public abstract class TestCase
 
     // extract Units Tests Project assets manager
     final Context test = getUnitTestsContext();
-    mAssets = test.getResources().getAssets();
+
+    if (null != test) {
+      mAssets = test.getResources().getAssets();
+    } else {
+      mAssets = getContext().getResources().getAssets();
+    }
 
     assertNotNull("Initialization of the Unit Tests Project assets manager failed.", mAssets);
   }
@@ -111,6 +119,8 @@ public abstract class TestCase
    * setup of tests is done set @Suppress annotation on this method.
    */
   @Override
+  @Ignore
+  @Suppress
   public void testAndroidTestCaseSetupProperly() {
     super.testAndroidTestCaseSetupProperly();
 

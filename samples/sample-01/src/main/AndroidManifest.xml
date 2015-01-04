@@ -5,6 +5,7 @@
     android:versionName="1.0"
     package="com.artfulbits.benchmark.sample">
 
+    <!--android:name="android.support.multidex.MultiDexApplication"-->
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"

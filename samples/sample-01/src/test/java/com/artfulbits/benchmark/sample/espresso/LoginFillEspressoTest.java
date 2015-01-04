@@ -1,7 +1,6 @@
 package com.artfulbits.benchmark.sample.espresso;
 
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.suitebuilder.annotation.Suppress;
 
 import com.artfulbits.benchmark.sample.MainActivity;
 import com.artfulbits.benchmark.sample.R;
@@ -13,7 +12,6 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 /** Default Android tests. */
-@Suppress
 public class LoginFillEspressoTest extends ActivityInstrumentationTestCase2<MainActivity> {
   @SuppressWarnings("deprecation")
   public LoginFillEspressoTest() {
