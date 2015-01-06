@@ -10,7 +10,7 @@
 language: android
 
 jdk:
-    - oraclejdk7
+    #- oraclejdk7
     - oraclejdk8
 
 env:
