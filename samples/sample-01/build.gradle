@@ -155,20 +155,19 @@ android {
 
         if (useTesting) {
             // default is: testApplicationId 'com.artfulbits.benchmark.sample.tests'
+            def runner = "android.test.InstrumentationTestRunner"
 
             if (useEspresso) {
                 /* attach espresso runner - v2.0 */
-                def runner = "android.support.test.runner.AndroidJUnitRunner"
+                runner = "android.support.test.runner.AndroidJUnitRunner"
             } else {
                 /* default unit testing runner */
                 if (useMultiDex) {
-                    def runner = "android.support.multidex.MultiDexTestRunner"
-                } else {
-                    def runner = "android.test.InstrumentationTestRunner"
+                    runner = "android.support.multidex.MultiDexTestRunner"
                 }
             }
 
-            testInstrumentationRunner runner
+            testInstrumentationRunner "${runner}"
         }
     }
 
