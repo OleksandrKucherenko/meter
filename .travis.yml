@@ -24,6 +24,7 @@ env:
     #- secure: "NO1orR9cZgKB6qLMdfwj2+Mh5has9FFFwIxkNadpK6gjhCR/GOCrQLPqEi5BvX4o5fDV8M01rW0dOoRlgOne4pFIXfuQY6rdVaUDYtTQajx1bEvnTQntY15Fj3Bmi8GDVlgIMkuSJmK62brT8oOderOyOYV5QHgVxOtcznIzAhI="
     # say gradle to output without color codes, the same as add switch --no-color
     - TERM=dumb
+    - VERBOSITY=
   matrix:
     # run 'android list targets & pause' to see list of possible targets for matrix
     - ANDROID_TARGET=android-21  ANDROID_ABI=armeabi-v7a  AVD_NAME='test-api21-arm'
@@ -44,8 +45,8 @@ addons:
       name: "OleksandrKucherenko/meter"
       description: "Micro-benchmarking tool for Android projects."
     notification_email: $EMAIL
-    build_command_prepend: "./gradlew clean --info --no-color"
-    build_command: "./gradlew assembleDebug --info --no-color"
+    build_command_prepend: "./gradlew clean $VERBOSITY --no-color"
+    build_command: "./gradlew assembleDebug $VERBOSITY --no-color"
     branch_pattern: master
 
 before_install:
@@ -105,8 +106,8 @@ script:
   #- ./gradlew assembleDebug assembleDebugTest --info -PdisablePreDex
   # second run will be fast!
   #- travis_retry ./gradlew build connectedCheck --info
-  - ./gradlew build connectedCheck --info
+  - ./gradlew build connectedCheck $VERBOSITY
 
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
-  - ./gradlew :library:coveralls
+  - ./gradlew :library:coveralls $VERBOSITY
