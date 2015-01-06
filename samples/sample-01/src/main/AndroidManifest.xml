@@ -8,6 +8,7 @@
     <!--android:name="android.support.multidex.MultiDexApplication"-->
     <application
         android:allowBackup="true"
+        android:name=".TheApp"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">

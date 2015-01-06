@@ -54,6 +54,9 @@ allprojects {
         androidTargetSdkVersion = Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
         androidMinSdkVersion = Integer.parseInt(project.ANDROID_BUILD_MIN_SDK_VERSION)
 
+        /* Enable multi-dex support */
+        useMultiDex = Boolean.parseBoolean(project.USE_MULTIDEX)
+
         /* DEFINE SHOULD TESTING CONFIGURATION BE ENABLED OR NOT */
         useTesting = Boolean.parseBoolean(project.USE_TDD)
 
@@ -64,6 +67,7 @@ allprojects {
         useRobolectric = useTesting & Boolean.parseBoolean(project.USE_ROBOLECTRIC)
 
         /* CODE COVERAGE PLUGIN/TOOL VERSION */
+        useJacoco = useTesting & Boolean.parseBoolean(project.USE_JACOCO)
         JaCoCoVersion = project.JACOCO_VERSION
         CoverallsVersion = project.COVERALLS_VERSION
 
@@ -93,6 +97,19 @@ allprojects {
     apply plugin: 'com.github.ben-manes.versions'
 }
 
+/* BUILD SERVER IMPROVEMENTS */
+subprojects {
+    // Improve build server performance by allowing disabling of pre-dexing
+    // (see http://tools.android.com/tech-docs/new-build-system/tips#TOC-Improving-Build-Server-performance.)
+    project.plugins.whenPluginAdded { plugin ->
+        if ("com.android.build.gradle.AppPlugin".equals(plugin.class.name)) {
+            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
+        } else if ("com.android.build.gradle.LibraryPlugin".equals(plugin.class.name)) {
+            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
+        }
+    }
+}
+
 /* PRINT to output configuration details of the build. */
 println new String(new char[80]).replace("\0", "-")
 println 'Android Build Tools: ' + project.ANDROID_BUILD_TOOLS_VERSION
@@ -100,9 +117,11 @@ println 'Android SDK version: ' + project.ANDROID_BUILD_SDK_VERSION
 println 'Android Support Library: ' + project.ANDROID_SUPPORT_LIB_VERSION
 println 'Target API: ' + project.ANDROID_BUILD_TARGET_SDK_VERSION
 println 'Minimal API: ' + project.ANDROID_BUILD_MIN_SDK_VERSION
+println 'Use MultiDex: ' + project.USE_MULTIDEX
 println 'Use Tests: ' + project.USE_TDD
 println 'Use Espresso: ' + project.USE_ESPRESSO
 println 'Use Robolectric: ' + project.USE_ROBOLECTRIC
+println 'Use JaCoCo: ' + project.USE_JACOCO
 println 'JaCoCo Library: ' + project.JACOCO_VERSION
 println 'Coveralls Version: ' + project.COVERALLS_VERSION
 println 'Source code GIT Revision: ' + "${gitRevision()}"

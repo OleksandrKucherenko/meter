@@ -57,7 +57,7 @@ dependencies {
                 'com.google.dexmaker:dexmaker-mockito:+'
 
         /* jUnit (v4.12) */
-        androidTestCompile('junit:junit:+') { exclude module: 'hamcrest-core' }
+        androidTestCompile('junit:junit:4.12') { exclude group: 'org.hamcrest' }
     }
 }
 
@@ -87,7 +87,7 @@ android {
 
     buildTypes {
         debug {
-            testCoverageEnabled true
+            testCoverageEnabled useJacoco
             shrinkResources false /* incompatible with useJack !!! */
         }
         release {

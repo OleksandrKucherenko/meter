@@ -5,13 +5,13 @@ import org.apache.tools.ant.taskdefs.condition.Os
 buildscript {
     repositories {
         jcenter()
-//        mavenLocal()
-//        mavenCentral()
+        mavenLocal()
+        mavenCentral()
         /* ATTACH CUSTOM BUILDS OF GRADLE PLUGINS FROM '~/gradle/plugins' folder */
 //        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.+'
+        classpath 'com.android.tools.build:gradle:1.0.0'
         classpath 'org.robolectric:robolectric-gradle-plugin:+'
         /* https://github.com/kt3k/coveralls-gradle-plugin */
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
@@ -25,19 +25,28 @@ apply plugin: 'com.github.kt3k.coveralls'
 
 /* DEFINE REPOSITORY WITH LATEST ROBOLECTRIC VERSION */
 repositories {
-    mavenCentral()
+//    mavenCentral()
+    jcenter()
+}
+
+configurations.all {
+    /* Espresso v2.0 uses this module instead of jUnit v4.12... fix this !!! */
+    exclude group: 'junit', module: 'junit-dep'
 }
 
 dependencies {
     /* ----------------------------- */
     /* RELEASE and DEBUG COMPILATION */
     /* ----------------------------- */
+    compile fileTree(dir: 'libs', include: ['*.jar'])
     compile "com.android.support:support-v4:${androidSupportLib}"
     compile "com.android.support:appcompat-v7:${androidSupportLib}"
-//    compile 'com.android.support:multidex:1.0.0'
-    compile project(':library')
 
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    if (useMultiDex) {
+        compile 'com.android.support:multidex:+'
+    }
+
+    compile project(':library')
 
     /* -------------------------- */
     /* UNIT TESTING configuration */
@@ -48,7 +57,13 @@ dependencies {
 
         /* UNIT TESTS HAS DEPENDENCY ON SUPPORT LIB, SO INCLUDE IT MANUALLY FOR CONTROLLING THE VERSION OF IT */
         androidTestCompile "com.android.support:support-v4:${androidSupportLib}"
-//        androidTestCompile 'com.android.support:multidex-instrumentation:1.0.0'
+
+        if (useMultiDex) {
+            // https://code.google.com/p/android/issues/detail?id=82647
+            androidTestCompile('com.android.support:multidex-instrumentation:+') {
+                exclude group: 'com.android.support', module: 'multidex' // already in compile.
+            }
+        }
 
         /* Hamcrest (v1.4) */
         androidTestCompile 'org.hamcrest:hamcrest-core:+',
@@ -59,20 +74,39 @@ dependencies {
         androidTestCompile 'com.squareup.dagger:dagger:+'
 
         /* Mockito (v2.0.2-beta) */
-        androidTestCompile 'org.mockito:mockito-core:+',
-                'com.google.dexmaker:dexmaker-mockito:+'
+        androidTestCompile('org.mockito:mockito-core:+') { exclude group: 'org.hamcrest' }
+        androidTestCompile 'com.google.dexmaker:dexmaker-mockito:+'
 
         /* Fest Android (v1.0.8), fest util (v1.2.5), Fest core (v 2.0M10) */
         androidTestCompile 'com.squareup:fest-android:+@aar'
+//        androidTestCompile 'com.squareup.assertj:assertj-android:+'
+//        androidTestCompile 'com.squareup.assertj:assertj-android-support-v4:+'
 
         /* jUnit (v4.12) */
-        androidTestCompile 'junit:junit:+'
+        androidTestCompile('junit:junit:4.12') { exclude group: 'org.hamcrest' }
 
+        // Espresso include 'junit:junit-dep' package which is a earlier version of the jUnit v4.12
         if (useEspresso) {
             /* Espresso (v2.0) */
-            androidTestCompile 'com.android.support.test:testing-support-lib:+',
-                    'com.android.support.test.espresso:espresso-core:+',
-                    'com.android.support.test.espresso:espresso-contrib:+'
+            androidTestCompile('com.android.support.test:testing-support-lib:+') {
+                exclude group: 'junit'
+                exclude group: 'org.hamcrest'
+            }
+            androidTestCompile('com.android.support.test.espresso:espresso-core:+') {
+                exclude group: 'org.hamcrest'
+            }
+            androidTestCompile 'com.android.support.test.espresso:espresso-contrib:+'
+            /*
+            [1] AndoidJUnitRunner Javadoc - http://goo.gl/Tct8R5
+            [2] AndroidJUnitRunner Docs - http://goo.gl/pSr8oB
+            [3] Android-Testing Github Samples - http://goo.gl/zNHuS9
+            [4] Espresso Setup Guide - http://goo.gl/WR9t36
+            [5] Espresso Documentation - http://goo.gl/jSI0xl
+            [6] Espresso-Core Javadoc - http://goo.gl/OyaHKn
+            [7] Espresso-Contrib Javadoc - http://goo.gl/gZgISI
+            [8] Espresso-Idling Javadoc - http://goo.gl/ZwVyn7﻿
+            */
+        } else {
         }
 
         if (useRobolectric) {
@@ -113,25 +147,28 @@ android {
         targetSdkVersion androidTargetSdkVersion
         /*useJack true*/
 
-        multiDexEnabled false
+        multiDexEnabled useMultiDex
+
         applicationId 'com.artfulbits.benchmark.sample'
         versionCode 1
         versionName "1.0"
 
         if (useTesting) {
-            //testApplicationId 'com.artfulbits.benchmark.sample.tests'
+            // default is: testApplicationId 'com.artfulbits.benchmark.sample.tests'
 
             if (useEspresso) {
-                /* attach espresso runner */
-                /* v1.0 */
-                // testInstrumentationRunner "com.google.android.apps.common.testing.testrunner.GoogleInstrumentationTestRunner"
-                /* v2.0 */
-                testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+                /* attach espresso runner - v2.0 */
+                def runner = "android.support.test.runner.AndroidJUnitRunner"
             } else {
                 /* default unit testing runner */
-                testInstrumentationRunner "android.test.InstrumentationTestRunner"
-//                testInstrumentationRunner "android.support.multidex.MultiDexTestRunner"
+                if (useMultiDex) {
+                    def runner = "android.support.multidex.MultiDexTestRunner"
+                } else {
+                    def runner = "android.test.InstrumentationTestRunner"
+                }
             }
+
+            testInstrumentationRunner runner
         }
     }
 
@@ -186,6 +223,9 @@ android {
             minifyEnabled false
             shrinkResources false /* !!! incompatible with useJack !!! */
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            /* http://toastdroid.com/2014/03/28/customizing-your-build-with-gradle/ */
+            buildConfigField "boolean", "USED_MULTIDEX", (useMultiDex ? "true" : "false")
         }
         // debug configuration with custom debug key
         debug {
@@ -195,7 +235,9 @@ android {
             shrinkResources false
             debuggable true
             jniDebuggable true
-            testCoverageEnabled true
+            testCoverageEnabled useJacoco
+
+            buildConfigField "boolean", "USED_MULTIDEX", (useMultiDex ? "true" : "false")
         }
         // release without obfuscation
         noProguardRelease.initWith(buildTypes.release)
@@ -238,7 +280,7 @@ android {
     /* GIVE DEX MORE MEMORY */
     dexOptions {
 //        incremental true
-//        jumboMode true
+        jumboMode true
         preDexLibraries false
         javaMaxHeapSize "4g"
     }
@@ -290,6 +332,38 @@ android {
                 def log = "Application variant.outputs output file name: '${newFilename}'"
                 rootProject.logger.lifecycle(log)
             }
+        }
+    }
+}
+
+if (useJacoco) {
+    /* http://raptordigital.blogspot.se/2014/08/code-coverage-reports-using-robolectric.html */
+    apply plugin: 'jacoco'
+
+    /* be specific about JaCoCo version. */
+    jacoco {
+        version JaCoCoVersion
+    }
+
+    def sourceDirs = ['./src/main/java', '../../library/src/main/java']
+
+    task jacocoTestReport(type: JacocoReport, dependsOn: "testDebug") {
+        group = "Reporting"
+        description = "Generate Jacoco coverage reports"
+        classDirectories = fileTree(
+                dir: '../sample-01/build/intermediates/classes/debug',
+                excludes: ['**/R.class',
+                           '**/R$*.class',
+                           '**/*$ViewInjector*.*',
+                           '**/BuildConfig.*',
+                           '**/Manifest*.*']
+        )
+        additionalSourceDirs = files(sourceDirs)
+        sourceDirectories = files(sourceDirs)
+        executionData = files('../sample-01/build/jacoco/testDebug.exec')
+        reports {
+            xml.enabled = true
+            html.enabled = true
         }
     }
 }
@@ -389,3 +463,17 @@ task openLintResults(type: Exec, dependsOn: ["lint"]) {
 //        rootProject.logger.lifecycle("--> Robolectric Unit Testings is not enabled! <--")
 //    }
 //}
+
+if (useMultiDex) {
+    afterEvaluate {
+        tasks.matching { it.name.startsWith('dex') }.each { dx ->
+            println 'Found Dex tasks: ' + dx.name
+
+            if (dx.additionalParameters == null) {
+                dx.additionalParameters = []
+            }
+
+            dx.additionalParameters += '--multi-dex' // enable multidex
+        }
+    }
+}

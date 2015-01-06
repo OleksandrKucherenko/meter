@@ -12,143 +12,144 @@ apply from: "${rootProject.rootDir}/gradle/config/classycle.gradle"
 check.dependsOn 'checkstyle', 'findbugs', 'cpd', 'jdepend', 'pmdResults' //, 'javancss'
 
 task checkstyle(type: Checkstyle) {
-  description = 'execute checkstyle tool on project source code'
-  group = 'Code Quality'
+    description = 'execute checkstyle tool on project source code'
+    group = 'Code Quality'
 
-  // important: keep those two flags, otherwise Jenkins will fail build on any rule break with severity 'error'
-  ignoreFailures = true
-  showViolations = false
+    // important: keep those two flags, otherwise Jenkins will fail build on any rule break with severity 'error'
+    ignoreFailures = true
+    showViolations = false
 
-  configFile file("${project.rootDir}/config/quality/checkstyle/checkstyle.xml")
-  source 'src'
-  include '**/*.java'
+    configFile file("${project.rootDir}/config/quality/checkstyle/checkstyle.xml")
+    source 'src'
+    include '**/*.java'
 
-  // exclude auto-generated code and 3rd party libs
-  exclude '**/build/generated/**', '**/build/source/**',
-          '**/com/android/**', '**/com/google/**', '**/android/support/**'
+    // exclude auto-generated code and 3rd party libs
+    exclude '**/build/generated/**', '**/build/source/**',
+            '**/com/android/**', '**/com/google/**', '**/android/support/**',
+            '**/BuildConfig.java', '**/R.java'
 
-  classpath = files()
+    classpath = files()
 
-  reports {
-    xml.enabled = true
-  }
+    reports {
+        xml.enabled = true
+    }
 }
 
 task findbugs(type: FindBugs, dependsOn: ['assembleDebug']) {
-  description = 'execute findbugs tool on project compiled code'
-  group = 'Code Quality'
+    description = 'execute findbugs tool on project compiled code'
+    group = 'Code Quality'
 
 //    logger.lifecycle("==================> buildDir: " + "$project.buildDir")
 //    logger.lifecycle("==================> rootDir: " + "${project.rootDir}")
 
-  ignoreFailures = true
+    ignoreFailures = true
 
-  effort = "max"
-  reportLevel = "high"
-  excludeFilter = new File("${project.rootDir}/config/quality/findbugs/findbugs-filter.xml")
-  classes = files("${project.buildDir}/intermediates/classes")
+    effort = "max"
+    reportLevel = "high"
+    excludeFilter = new File("${project.rootDir}/config/quality/findbugs/findbugs-filter.xml")
+    classes = files("${project.buildDir}/intermediates/classes")
 
-  source 'src'
-  include '**/*.java'
-  // exclude auto-generated code and 3rd party libs
-  exclude '**/build/generated/**', '**/build/source/**',
-          '**/com/android/**', '**/com/google/**', '**/android/support/**'
+    source 'src'
+    include '**/*.java'
+    // exclude auto-generated code and 3rd party libs
+    exclude '**/build/generated/**', '**/build/source/**',
+            '**/com/android/**', '**/com/google/**', '**/android/support/**'
 
-  reports {
-    xml {
-      destination "$project.buildDir/reports/findbugs/findbugs.xml"
-      xml.withMessages true
-      //enabled = true
+    reports {
+        xml {
+            destination "$project.buildDir/reports/findbugs/findbugs.xml"
+            xml.withMessages true
+            //enabled = true
+        }
+        //html.enabled = false
     }
-    //html.enabled = false
-  }
 
-  classpath = files()
+    classpath = files()
 }
 
 pmd {
-  // specify new version, otherwise will be used old v4.3
-  toolVersion = "5.1.0"
-  targetJdk = "1.6"
+    // specify new version, otherwise will be used old v4.3
+    toolVersion = "5.1.0"
+    targetJdk = "1.6"
 
-  ignoreFailures = true
+    ignoreFailures = true
 
-  ruleSets = ["rulesets/java/basic.xml",
-              "rulesets/java/braces.xml",
-              "rulesets/java/imports.xml",
-              "rulesets/java/empty.xml",
-              "rulesets/java/codesize.xml",
-              "rulesets/java/design.xml",
-              "rulesets/java/optimizations.xml",
-              "rulesets/java/strings.xml",
-              "rulesets/java/unusedcode.xml"]
+    ruleSets = ["rulesets/java/basic.xml",
+                "rulesets/java/braces.xml",
+                "rulesets/java/imports.xml",
+                "rulesets/java/empty.xml",
+                "rulesets/java/codesize.xml",
+                "rulesets/java/design.xml",
+                "rulesets/java/optimizations.xml",
+                "rulesets/java/strings.xml",
+                "rulesets/java/unusedcode.xml"]
 
-  ruleSetFiles = files("${project.rootDir}/config/quality/pmd/pmd-ruleset.xml")
+    ruleSetFiles = files("${project.rootDir}/config/quality/pmd/pmd-ruleset.xml")
 
-  reportsDir file("${project.buildDir}/reports/pmd")
+    reportsDir file("${project.buildDir}/reports/pmd")
 
-  sourceSets {
-    results {
-      // leave it empty, source set will be configured later
-      // otherwise we will have a conflict with java compiler
+    sourceSets {
+        results {
+            // leave it empty, source set will be configured later
+            // otherwise we will have a conflict with java compiler
+        }
     }
-  }
 }
 
 tasks.pmdResults {
-  description = 'execute PMD tool on project source code'
-  group = 'Code Quality'
+    description = 'execute PMD tool on project source code'
+    group = 'Code Quality'
 
-  source 'src'
+    source 'src'
 
-  // exclude auto-generated code and 3rd party libs
-  exclude '**/build/generated/**',
-          '**/build/source/**',
-          '**/com/android/**',
-          '**/com/google/**',
-          '**/android/support/**'
+    // exclude auto-generated code and 3rd party libs
+    exclude '**/build/generated/**',
+            '**/build/source/**',
+            '**/com/android/**',
+            '**/com/google/**',
+            '**/android/support/**'
 
-  reports {
-    xml {
-      enabled = true
-      destination = file("${project.buildDir}/reports/pmd/pmd.xml")
+    reports {
+        xml {
+            enabled = true
+            destination = file("${project.buildDir}/reports/pmd/pmd.xml")
+        }
+        html {
+            enabled = false
+            destination = file("${project.buildDir}/reports/pmd/pmd.html")
+        }
     }
-    html {
-      enabled = false
-      destination = file("${project.buildDir}/reports/pmd/pmd.html")
-    }
-  }
 }
 
 tasks.cpd {
-  description = 'execute CPD (copy/paste duplicates) tool on project code'
-  group = 'Code Quality'
+    description = 'execute CPD (copy/paste duplicates) tool on project code'
+    group = 'Code Quality'
 
-  reports {
-    csv.enabled = false
-    text.enabled = false
-    xml {
-      enabled = true
-      destination file("$project.buildDir/reports/cpd/cpd.xml")
+    reports {
+        csv.enabled = false
+        text.enabled = false
+        xml {
+            enabled = true
+            destination file("$project.buildDir/reports/cpd/cpd.xml")
+        }
     }
-  }
-  source = files('src')
+    source = files('src')
 }
 
 task jdepend(type: JDepend, dependsOn: ['assembleDebug']) {
-  description = 'execute JDepend tool on project binaries'
-  group = 'Code Quality'
+    description = 'execute JDepend tool on project binaries'
+    group = 'Code Quality'
 
-  classesDir = file("${project.buildDir}/intermediates/classes")
+    classesDir = file("${project.buildDir}/intermediates/classes")
 
-  reports {
-    text {
-      enabled = false
-      destination = file("${project.buildDir}/reports/jdepend/jdepend-results.txt")
+    reports {
+        text {
+            enabled = false
+            destination = file("${project.buildDir}/reports/jdepend/jdepend-results.txt")
+        }
+        xml {
+            enabled = !text.enabled
+            destination = file("${project.buildDir}/reports/jdepend/jdepend-results.xml")
+        }
     }
-    xml {
-      enabled = !text.enabled
-      destination = file("${project.buildDir}/reports/jdepend/jdepend-results.xml")
-    }
-  }
 }

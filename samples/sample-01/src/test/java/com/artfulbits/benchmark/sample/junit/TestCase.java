@@ -89,6 +89,8 @@ public abstract class TestCase
       context = (Context) sGetTestContext.invoke(this);
     } catch (final Exception ignored) {
       Log.e(TAG, "Cannot extract unit tests project context.");
+
+      // ALTERNATIVE: context = InstrumentationRegistry.getInstrumentation().getContext();
     }
 
     return context;
@@ -102,13 +104,14 @@ public abstract class TestCase
     super.setUp();
 
     // extract Units Tests Project assets manager
-    final Context test = getUnitTestsContext();
+    final Context testsContext = getUnitTestsContext();
 
-    if (null != test) {
-      mAssets = test.getResources().getAssets();
+    if (null != testsContext) {
+      mAssets = testsContext.getResources().getAssets();
     } else {
       mAssets = getContext().getResources().getAssets();
     }
+
 
     assertNotNull("Initialization of the Unit Tests Project assets manager failed.", mAssets);
   }

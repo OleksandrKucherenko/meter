@@ -8,7 +8,10 @@
 #     BASH: http://www.gnu.org/software/bash/manual/bashref.html
 
 language: android
-jdk: oraclejdk7
+
+jdk:
+    - oraclejdk7
+    - oraclejdk8
 
 env:
   global:
@@ -33,6 +36,7 @@ env:
 cache:
   directories:
     - $HOME/.gradle
+    - $HOME/.m2
 
 addons:
   coverity_scan:
