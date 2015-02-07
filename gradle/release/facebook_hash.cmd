@@ -1,6 +1,6 @@
 @echo off
-:: ArtfulBits Inc. (c) 2005-2014
-:: 
+:: ArtfulBits Inc. (c) 2005-2015
+::
 :: Facebook Hash Calculations
 :: https://developers.facebook.com/docs/android/getting-started/
 

@@ -1,7 +1,7 @@
 @echo off
-:: ArtfulBits Inc. (c) 2005-2014
-:: 
-:: Signing of the APK by certificate 
+:: ArtfulBits Inc. (c) 2005-2015
+::
+:: Signing of the APK by certificate
 
 SET JDK=%JAVA_HOME%\bin
 SET COMPANY=artfulbits
@@ -20,7 +20,9 @@ SET ALIAS=artfulbits
 
 :: generate key
 if not exist "%DEST%\%KEYSTORE%" (
-  "%JDK%\keytool.exe" -genkey -alias %ALIAS% -keyalg RSA -validity 20000 -storepass %PASS% -keypass %KEY% -keystore %KEYSTORE% -dname "CN=%COMPANY%.com, OU=%COMPANY% security, O=%COMPANY%, L=%COMPANY%, S=Lviv, C=UA"
+  "%JDK%\keytool.exe" -genkey -alias %ALIAS% -keyalg RSA -validity 20000 ^
+  -storepass %PASS% -keypass %KEY% -keystore %KEYSTORE% ^
+  -dname "CN=%COMPANY%.com, OU=%COMPANY% security, O=%COMPANY%, L=%COMPANY%, S=Lviv, C=UA"
 )
 
 goto :EOF

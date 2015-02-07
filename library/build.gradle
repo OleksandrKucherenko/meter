@@ -9,7 +9,7 @@ buildscript {
 //        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.+'
+        classpath "com.android.tools.build:gradle:${gradlePluginVersion}"
         /* https://github.com/kt3k/coveralls-gradle-plugin */
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
         /* https://github.com/bintray/gradle-bintray-plugin
@@ -227,7 +227,7 @@ task sourcesJar(type: Jar) {
 
 task javadoc(type: Javadoc) {
     source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    //classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
     exclude '**/R.html', '**/R.*.html', '**/index.html'
 }
 

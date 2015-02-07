@@ -11,7 +11,7 @@ buildscript {
 //        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.0.0'
+        classpath "com.android.tools.build:gradle:${gradlePluginVersion}"
         classpath 'org.robolectric:robolectric-gradle-plugin:+'
         /* https://github.com/kt3k/coveralls-gradle-plugin */
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"

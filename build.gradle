@@ -44,6 +44,9 @@ allprojects {
 
     /* DEFINE GLOBAL VARIABLES */
     ext {
+        /* Android Gradle Plugin version */
+        gradlePluginVersion = project.GRADLE_PLUGIN
+
         androidCompileSdkVersion = Integer.parseInt(project.ANDROID_BUILD_SDK_VERSION)
         androidBuildToolsVersion = project.ANDROID_BUILD_TOOLS_VERSION
 
