@@ -1,72 +1,70 @@
 package com.artfulbits.benchmark.sample;
 
-import android.os.SystemClock;
+import com.artfulbits.benchmark.Meter;
 
-import com.artfulbits.benchmark.sample.junit.PerformanceTests;
-import com.artfulbits.benchmark.sample.junit.Sampling;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-/** Performance library tests. */
-public class MeterTests extends PerformanceTests {
-  @Override
-  protected void warmUp() {
-    // do nothing
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
-    meter().getConfig().ShowStepsGrid = true;
-    meter().getConfig().ShowAccumulatedTime = true;
+/**
+ * Basic unit tests of the library.
+ *
+ * @see <a href="http://www.vogella.com/tutorials/JUnit/article.html">Unit Testing with JUnit - Tutorial</a>
+ */
+public class MeterTests {
+
+  private static Meter sAnother = null;
+
+  @Before
+  public void setUp() {
+    sAnother = null;
   }
 
-  public void test_00_Meter() {
-
-    // sleep 1 seconds
-    SystemClock.sleep(1 * 1000);
-
-    meter().beat("test_00_Meter");
+  @After
+  public void tearDown() {
+    sAnother = null;
   }
 
-  public void test_01_TryCatchVsPlain(){
+  @Test
+  public void test_00_Instance() {
+    final Meter meter = Meter.getInstance();
 
-    final String value = "1234567890";
-    final int iterations = Sampling.ITERATIONS_XL;
-    final StringBuilder sb = new StringBuilder(iterations * value.length() + 1000);
+    assertNotNull("Expected instance of Meter class", meter);
+  }
 
-    for( int i = 0; i < iterations; i++ ) {
-      try {
-        long lValue = Long.parseLong(value);
+  @Test
+  public void test_01_Instance_Threads() {
+    assertNull("Reference should be null", sAnother);
 
-        sb.append(lValue);
+    final Meter meter = Meter.getInstance();
+    assertNotNull("Instance for current thread expected", meter);
+
+    final Thread t = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        sAnother = Meter.getInstance();
+
+        // notify that instance extracted
+        synchronized (meter) {
+          meter.notifyAll();
+        }
       }
-      catch(final NumberFormatException ignored){
-        // do nothing
+    });
+
+    try {
+      t.start();
+
+      synchronized (meter) {
+        meter.wait();
       }
+    } catch (final Throwable ignored) {
     }
-    meter().skip("preparations");
 
-    sb.setLength(0);
-    meter().loop(iterations, "try/catch after warm up");
-    for( int i = 0; i < iterations; i++ ) {
-      try {
-        long lValue = Long.parseLong(value);
-
-        sb.append(lValue);
-      }
-      catch(final NumberFormatException ignored){
-        // do nothing
-      } finally {
-        meter().recap();
-      }
-    }
-    meter().unloop("done.");
-
-    sb.setLength(0);
-    meter().loop(iterations, "No try/catch");
-    for( int i = 0; i < iterations; i++ ) {
-      long lValue = Long.parseLong(value);
-
-      sb.append(lValue);
-      meter().recap();
-    }
-    meter().unloop("done.");
-
-    meter().getConfig().ShowTopNLongest = 2;
+    assertNotNull("Expected another instance of the Meter class", sAnother);
+    assertNotEquals("Expected different instances for each thread.", meter, sAnother);
   }
 }

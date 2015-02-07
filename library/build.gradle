@@ -41,6 +41,7 @@ dependencies {
     /*         UNIT TESTING        */
     /* =========================== */
     if (useTesting) {
+        /* Android Tests -------------------------------------------------------------------------------------------- */
         // unit tests libs. Rule: repeated Libs should be excluded.
         androidTestCompile fileTree(dir: 'src/tests/libs', include: '*.jar')
 
@@ -58,6 +59,14 @@ dependencies {
 
         /* jUnit (v4.12) */
         androidTestCompile('junit:junit:4.12') { exclude group: 'org.hamcrest' }
+
+        /* JVM Tests ------------------------------------------------------------------------------------------------ */
+        testCompile 'org.hamcrest:hamcrest-integration:+',
+                'org.hamcrest:hamcrest-core:+',
+                'org.hamcrest:hamcrest-library:+'
+        testCompile 'org.mockito:mockito-core:+',
+                'com.google.dexmaker:dexmaker-mockito:+'
+        testCompile('junit:junit:4.12') { exclude group: 'org.hamcrest' }
     }
 }
 

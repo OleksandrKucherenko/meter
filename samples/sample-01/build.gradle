@@ -12,7 +12,8 @@ buildscript {
     }
     dependencies {
         classpath "com.android.tools.build:gradle:${gradlePluginVersion}"
-        classpath 'org.robolectric:robolectric-gradle-plugin:+'
+        classpath 'com.github.jcandksolutions.gradle:android-unit-test:2.1.1'
+        //classpath 'org.robolectric:robolectric-gradle-plugin:+'
         /* https://github.com/kt3k/coveralls-gradle-plugin */
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
     }
@@ -110,8 +111,14 @@ dependencies {
         }
 
         if (useRobolectric) {
+            // Robolectric
+            testCompile 'junit:junit:4.12'
+            testCompile 'org.hamcrest:hamcrest-core:1.1'
+            testCompile 'org.hamcrest:hamcrest-library:1.1'
+            testCompile 'org.hamcrest:hamcrest-integration:1.1'
+
             /* Robolectric (v2.4) */
-            androidTestCompile('org.robolectric:robolectric:+') {
+            testCompile('org.robolectric:robolectric:+') {
                 exclude module: 'classworlds'
                 exclude module: 'commons-logging'
                 exclude module: 'httpclient'
@@ -173,7 +180,9 @@ android {
 
     /* REDEFINE TESTS FOLDER */
     sourceSets {
-        androidTest.setRoot('src/test')
+//        test.setRoot('src/test')
+
+//        androidTest.setRoot('src/androidTest')
         androidTest {
             // UNCOMMENT for enabling 'custom manifest for unit tests' feature (part #1 of 2):
             // manifest.srcFile 'src/test/AndroidManifest.xml'
@@ -369,37 +378,37 @@ if (useJacoco) {
 
 coveralls.jacocoReportPath = 'build/outputs/reports/coverage/debug/report.xml'
 
-if (useRobolectric) {
-    apply plugin: 'robolectric'
-
-    robolectric {
-        // configure the set of classes for JUnit tests
-        include '**/*Test.class'
-        exclude '**/espresso/**/*.class'
-
-        // configure max heap size of the test JVM
-        maxHeapSize = "4g"
-
-        // configure some Java Virtual machine params for boosting tests running
-        jvmArgs '-XX:MaxPermSize=512m'
-
-        // configure whether failing tests should fail the build
-        ignoreFailures true
-
-        // use afterTest to listen to the test execution results
-        afterTest { descriptor, result ->
-            println "Executing test for {$descriptor.name} with result: ${result.resultType}"
-        }
-    }
-
-    apply plugin: 'idea'
-
-    idea {
-        module {
-            testOutputDir = file('build/test-classes/debug')
-        }
-    }
-}
+//if (useRobolectric) {
+//    apply plugin: 'robolectric'
+//
+//    robolectric {
+//        // configure the set of classes for JUnit tests
+//        include '**/*Test.class'
+//        exclude '**/espresso/**/*.class'
+//
+//        // configure max heap size of the test JVM
+//        maxHeapSize = "4g"
+//
+//        // configure some Java Virtual machine params for boosting tests running
+//        jvmArgs '-XX:MaxPermSize=512m'
+//
+//        // configure whether failing tests should fail the build
+//        ignoreFailures true
+//
+//        // use afterTest to listen to the test execution results
+//        afterTest { descriptor, result ->
+//            println "Executing test for {$descriptor.name} with result: ${result.resultType}"
+//        }
+//    }
+//
+//    apply plugin: 'idea'
+//
+//    idea {
+//        module {
+//            testOutputDir = file('build/test-classes/debug')
+//        }
+//    }
+//}
 
 /* ---------------------------------------------------------------------------------------------  */
 /* CUSTOM TASKS                                                                                   */

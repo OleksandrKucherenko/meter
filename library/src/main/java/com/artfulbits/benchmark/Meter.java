@@ -31,8 +31,6 @@ public final class Meter {
 
   /** Flag. Tells Meter class that loop is with unknown number of iterations. */
   public static final int LOOP_ENDLESS = -1000;
-  /** Default path used for trace DUMPs. */
-  public static final String DEFAULT_TRACE_PATH_PREFIX = Environment.getExternalStorageDirectory().getPath() + "/";
 
   /** preallocate size for reduce performance impacts. */
   private static final int PREALLOCATE = 256;
@@ -534,13 +532,27 @@ public final class Meter {
 
   /** Statistics output and Tracking behavior configuration. */
   public final static class Config {
+    /** Default path used for trace DUMPs. */
+    public static final String getDefaultTraceFilePath() {
+      // NOTE: for making Meter compatible with JVM tests - I expect exception from
+      // runner side: "java.lang.RuntimeException: Method setUp in android.test.AndroidTestCase
+      // not mocked. See https://sites.google.com/a/android.com/tools/tech-docs/unit-testing-support
+      // for details."
+
+      try {
+        return Environment.getExternalStorageDirectory().getPath() + "/";
+      } catch (final RuntimeException ignored) {
+        return "/";
+      }
+    }
+
     /** Output tag for logs used by meter class. */
     public String OutputTag = "meter";
     /**
      * Default DUMP trace file name. Used only when {@link Config#DoMethodsTrace} is set to <code>true</code>. Field
      * initialized by android default dump file name.
      */
-    public String MethodsTraceFilePath = DEFAULT_TRACE_PATH_PREFIX + "dmtrace.trace";
+    public String MethodsTraceFilePath = getDefaultTraceFilePath() + "dmtrace.trace";
     /**
      * <code>true</code> - in addition do Android default methods tracing, otherwise <code>false</code>. {@link
      * Config#MethodsTraceFilePath}* defines the output file name for trace info.
