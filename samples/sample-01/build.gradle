@@ -13,7 +13,6 @@ buildscript {
     dependencies {
         classpath "com.android.tools.build:gradle:${gradlePluginVersion}"
         classpath 'com.github.jcandksolutions.gradle:android-unit-test:2.1.1'
-        //classpath 'org.robolectric:robolectric-gradle-plugin:+'
         /* https://github.com/kt3k/coveralls-gradle-plugin */
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
     }

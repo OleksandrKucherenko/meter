@@ -1,5 +1,7 @@
 // Library: meter, Android Micro Benchmarking
 
+import org.apache.tools.ant.taskdefs.condition.Os
+
 buildscript {
     repositories {
         jcenter()
@@ -107,10 +109,9 @@ android {
     }
 
     sourceSets {
-        androidTest.setRoot('src/tests')
-        androidTest {
-            // default path is '~/java'
-            java.srcDirs = ['src/tests/java']
+        test {
+            // include library sources into tests
+            java.srcDirs = ['src/test/java', 'src/main/java']
         }
 
         debug.setRoot('build-types/debug')
@@ -149,6 +150,36 @@ android {
                 rootProject.logger.lifecycle(log)
             }
         }
+    }
+
+//    testVariants.all { variant ->
+//        variant.outputs.each { output ->
+//            rootProject.logger.lifecycle(output.dump())
+//        }
+//    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+}
+
+/* UNIT Test results */
+task openTestResults(type: Exec, dependsOn: ["test"]) {
+    // Task opens report file in default web-browser
+    description = 'open Unit Tests results in current web browser'
+    group = 'Code Quality'
+
+    logger.lifecycle(":openTestResults")
+
+    // done: force open of HTML file
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        // path is relative to current project path:
+        //      {project}\\samples\\sample-01
+        def path = """.\\build\\reports\\tests\\index.html"""
+        commandLine "cmd.exe", '/C', path
+
+    } else {
+        // this build server, or Mac OS, or Linux - ignore this call
     }
 }
 
@@ -250,3 +281,17 @@ artifacts {
     archives javadocJar
     archives sourcesJar
 }
+
+/* Adjust Mockable Android task  */
+//afterEvaluate {
+//    tasks.matching { it.name.startsWith('mockableAndroidJar') }.each { mock ->
+//        // https://android.googlesource.com/platform/tools/base/+/studio-1.1-dev/build-system/builder/src/main/java/com/android/builder/testing/MockableJarGenerator.java
+//        println 'Found task: ' + mock.name
+////        println mock.dump()
+//    }
+//
+//    tasks.matching { it.name.startsWith("preCompile") }.matching { it.name.endsWith("UnitTestJava") }.each { t ->
+//        println 'Found test runner: ' + t.name
+////        println t.dump()
+//    }
+//}

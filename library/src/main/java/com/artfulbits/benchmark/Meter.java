@@ -110,38 +110,42 @@ public final class Meter {
   /**
    * Calibrate class, benchmark cost of execution for Meter class on a specific device. Allows to compute more
    * accurate results during statistics displaying.
+   *
+   * @returns instance of captured calibration metrics.
    */
-  public void calibrate() {
+  public Calibrate calibrate() {
     // DONE: measure each method execution time and store for future calculations
 
-    long start = timestamp(), point;
+    long point1 = timestamp(), point2;
 
     start();
-    mCalibrate.Start = (point = timestamp()) - start;
+    mCalibrate.Start = (point2 = timestamp()) - point1;
 
     beat();
-    mCalibrate.Beat = (start = timestamp()) - point;
+    mCalibrate.Beat = (point1 = timestamp()) - point2;
 
     log("calibrate");
-    mCalibrate.Log = (point = timestamp()) - start;
+    mCalibrate.Log = (point2 = timestamp()) - point1;
 
     skip();
-    mCalibrate.Skip = (start = timestamp()) - point;
+    mCalibrate.Skip = (point1 = timestamp()) - point2;
 
     loop();
-    mCalibrate.Loop = (point = timestamp()) - start;
+    mCalibrate.Loop = (point2 = timestamp()) - point1;
 
     recap();
-    mCalibrate.Recap = (start = timestamp()) - point;
+    mCalibrate.Recap = (point1 = timestamp()) - point2;
 
     unloop();
-    mCalibrate.UnLoop = (point = timestamp()) - start;
+    mCalibrate.UnLoop = (point2 = timestamp()) - point1;
 
     end();
-    mCalibrate.End = (start = timestamp()) - point;
+    mCalibrate.End = (point1 = timestamp()) - point2;
 
     pop();
-    mCalibrate.Pop = timestamp() - start;
+    mCalibrate.Pop = timestamp() - point1;
+
+    return mCalibrate;
   }
 
   /** Method used for timestamp value extracting. */

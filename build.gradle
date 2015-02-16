@@ -24,6 +24,9 @@ subprojects {
             project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
         }
     }
+
+    /* ATTACH DEPENDENCY UPDATE VERSION REPORT PLUGIN */
+    apply plugin: 'com.github.ben-manes.versions'
 }
 
 // get Git revision as a NUMBER (subversion style of revision)
@@ -94,22 +97,6 @@ allprojects {
         LIBRARY_LIC = project.LIBRARY_LIC
         LIBRARY_LIC_URL = project.LIBRARY_LIC_URL
         PUBLISHING_DRY_RUN = Boolean.parseBoolean(project.PUBLISHING_DRY_RUN)
-    }
-
-    /* ATTACH DEPENDENCY UPDATE VERSION REPORT PLUGIN */
-    apply plugin: 'com.github.ben-manes.versions'
-}
-
-/* BUILD SERVER IMPROVEMENTS */
-subprojects {
-    // Improve build server performance by allowing disabling of pre-dexing
-    // (see http://tools.android.com/tech-docs/new-build-system/tips#TOC-Improving-Build-Server-performance.)
-    project.plugins.whenPluginAdded { plugin ->
-        if ("com.android.build.gradle.AppPlugin".equals(plugin.class.name)) {
-            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
-        } else if ("com.android.build.gradle.LibraryPlugin".equals(plugin.class.name)) {
-            project.android.dexOptions.preDexLibraries = rootProject.ext.preDexLibs
-        }
     }
 }
 
