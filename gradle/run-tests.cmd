@@ -1,0 +1,2 @@
+cd ..
+gradlew --continue openTestResults
