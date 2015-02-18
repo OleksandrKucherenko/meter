@@ -1,5 +1,7 @@
 package com.artfulbits.benchmark;
 
+import android.os.SystemClock;
+
 import com.artfulbits.benchmark.junit.Sampling;
 
 import org.junit.After;
@@ -9,6 +11,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * jUnit tests for Meter class.
@@ -75,29 +78,38 @@ public class MeterTests {
     final Meter.Calibrate results = meter.calibrate();
 
     assertNotNull("Expected instance", results);
-    assertNotEquals(0L, results.Start);
-    assertNotEquals(0L, results.Beat);
-    assertNotEquals(0L, results.Log);
-    assertNotEquals(0L, results.Skip);
-    assertNotEquals(0L, results.Loop);
-    assertNotEquals(0L, results.Recap);
-    assertNotEquals(0L, results.UnLoop);
-    assertNotEquals(0L, results.End);
-    assertNotEquals(0L, results.Pop);
+
+    final String values = "Nanos → Start/Beat/Log/Skip/Loop/Recap/UnLoop/End/Pop → " +
+        results.Start + "/" + results.Beat + "/" + results.Log + "/" +
+        results.Skip + "/" + results.Loop + "/" + results.Recap + "/" +
+        results.UnLoop + "/" + results.End + "/" + results.Pop;
+
+    assertNotEquals(values, 0L, results.Start);
+    assertNotEquals(values, 0L, results.Beat);
+    assertNotEquals(values, 0L, results.Log);
+    assertNotEquals(values, 0L, results.Skip);
+    assertNotEquals(values, 0L, results.Loop);
+    assertNotEquals(values, 0L, results.Recap);
+    assertNotEquals(values, 0L, results.UnLoop);
+    assertNotEquals(values, 0L, results.End);
+    assertNotEquals(values, 0L, results.Pop);
   }
 
   @Test
-  public void test_03_SmokeRun() {
+  public void test_03_CommonRun() {
     final Meter meter = Meter.getInstance();
     assertNotNull("Expected instance.", meter);
 
     final Meter.Calibrate timing = meter.calibrate();
     assertNotNull("Expected instance.", timing);
 
-    meter.start("--> Smoke test");
+    meter.start("→ Smoke test");
 
     // TODO: warm up java classes
     meter.skip("warming up");
+
+    // TODO:
+    meter.beat("initialization");
 
     meter.loop(Sampling.ITERATIONS_L, "");
     for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
@@ -106,6 +118,41 @@ public class MeterTests {
     }
     meter.unloop("");
 
-    meter.end("<-- Smoke test");
+    meter.finish("← Smoke test");
+  }
+
+  @Test
+  public void test_04_NestedRun() {
+    final Meter meter = Meter.getInstance();
+    assertNotNull("Expected instance.", meter);
+
+    final Meter.Calibrate timing = meter.calibrate();
+    assertNotNull("Expected instance.", timing);
+
+    meter.start("→ Smoke test");
+
+    SystemClock.sleep(100);
+    meter.skip("warming up");
+
+    SystemClock.sleep(150);
+    meter.beat("initialization");
+
+    final int id = meter.start("→→ Sub measurements");
+    meter.loop(Sampling.ITERATIONS_L, "");
+    for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
+
+      meter.recap();
+    }
+    meter.unloop();
+    meter.end("←← Sub measurements"); // No statistics printing!!!
+    meter.pop();
+
+    meter.beat("testing loop");
+
+    SystemClock.sleep(100);
+
+    meter.finish("← Smoke test");
+
+    assertTrue("Nested measurement should have ID bigger zero", 0 < id);
   }
 }

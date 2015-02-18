@@ -341,6 +341,11 @@ android {
             }
         }
     }
+
+    /* https://sites.google.com/a/android.com/tools/tech-docs/unit-testing-support */
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
 }
 
 if (useJacoco) {
@@ -432,7 +437,7 @@ if (useRobolectric) {
         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
             // path is relative to current project path:
             //      {project}\\samples\\sample-01
-            def path = """.\\build\\test-report\\index.html"""
+            def path = """.\\build\\reports\\tests\\index.html"""
             commandLine "cmd.exe", '/C', path
 
         } else {
