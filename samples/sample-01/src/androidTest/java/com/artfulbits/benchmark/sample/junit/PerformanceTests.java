@@ -1,4 +1,4 @@
-package com.artfulbits.benchmark.sample.junit;
+package com.artfulbits.benchmark.junit;
 
 import android.util.Log;
 

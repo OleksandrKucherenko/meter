@@ -1,4 +1,4 @@
-package com.artfulbits.benchmark.sample.junit;
+package com.artfulbits.benchmark.junit;
 
 /** Traditional Sampling constants. */
 public interface Sampling {

@@ -1,4 +1,4 @@
-package com.artfulbits.benchmark.sample.junit;
+package com.artfulbits.benchmark.junit;
 
 import android.annotation.TargetApi;
 import android.content.Context;

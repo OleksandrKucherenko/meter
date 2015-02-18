@@ -2,8 +2,8 @@ package com.artfulbits.benchmark.sample;
 
 import android.os.SystemClock;
 
-import com.artfulbits.benchmark.sample.junit.PerformanceTests;
-import com.artfulbits.benchmark.sample.junit.Sampling;
+import com.artfulbits.benchmark.junit.PerformanceTests;
+import com.artfulbits.benchmark.junit.Sampling;
 
 /** Performance library tests. */
 public class MeterTests extends PerformanceTests {

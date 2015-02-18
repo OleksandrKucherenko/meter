@@ -1,5 +1,7 @@
 package com.artfulbits.benchmark;
 
+import com.artfulbits.benchmark.junit.Sampling;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,5 +84,28 @@ public class MeterTests {
     assertNotEquals(0L, results.UnLoop);
     assertNotEquals(0L, results.End);
     assertNotEquals(0L, results.Pop);
+  }
+
+  @Test
+  public void test_03_SmokeRun() {
+    final Meter meter = Meter.getInstance();
+    assertNotNull("Expected instance.", meter);
+
+    final Meter.Calibrate timing = meter.calibrate();
+    assertNotNull("Expected instance.", timing);
+
+    meter.start("--> Smoke test");
+
+    // TODO: warm up java classes
+    meter.skip("warming up");
+
+    meter.loop(Sampling.ITERATIONS_L, "");
+    for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
+
+      meter.recap();
+    }
+    meter.unloop("");
+
+    meter.end("<-- Smoke test");
   }
 }
