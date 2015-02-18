@@ -111,3 +111,6 @@ script:
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
   - ./gradlew :library:coveralls $VERBOSITY
+
+notifications:
+  email: false
