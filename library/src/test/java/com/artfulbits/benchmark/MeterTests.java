@@ -8,6 +8,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.logging.Level;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -19,12 +25,63 @@ import static org.junit.Assert.assertTrue;
  * @see <a href="http://www.vogella.com/tutorials/JUnit/article.html">Unit Testing with JUnit - Tutorial</a>
  */
 public class MeterTests {
+  /* [ STATIC MEMBERS ] ============================================================================================ */
 
   private static Meter sAnother = null;
+  private Comparator<Object> mObjectComparator;
+  private Comparator<Method> mMethodComparator;
+
+  private Meter.Output mOutput;
+
+	/* [ IMPLEMENTATION & HELPERS ] ================================================================================== */
 
   @Before
   public void setUp() {
     sAnother = null;
+
+    // sort by name
+    mMethodComparator = new Comparator<Method>() {
+      @Override
+      public int compare(final Method lhs, final Method rhs) {
+        return lhs.getName().compareTo(rhs.getName());
+      }
+    };
+
+    // find by name
+    mObjectComparator = new Comparator<Object>() {
+      @Override
+      public int compare(final Object lhs, final Object rhs) {
+        if (lhs instanceof Method) {
+          if (rhs instanceof Method) {
+            return ((Method) lhs).getName().compareTo(((Method) rhs).getName());
+          }
+
+          return ((Method) lhs).getName().compareTo((String) rhs);
+        }
+
+        if (rhs instanceof Method) {
+          return ((String) lhs).compareTo(((Method) rhs).getName());
+        }
+
+        return ((String) lhs).compareTo((String) rhs);
+      }
+    };
+
+    mOutput = new Meter.Output() {
+      private StringBuilder mLog = new StringBuilder(64 * 1024).append("\r\n");
+
+      @Override
+      public void log(final Level level, final String tag, final String msg) {
+        mLog.append(level.toString().charAt(0)).append(" : ")
+            .append(tag).append(" : ")
+            .append(msg).append("\r\n");
+      }
+
+      @Override
+      public String toString() {
+        return mLog.toString();
+      }
+    };
   }
 
   @After
@@ -113,7 +170,6 @@ public class MeterTests {
 
     meter.loop(Sampling.ITERATIONS_L, "");
     for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
-
       meter.recap();
     }
     meter.unloop("");
@@ -122,7 +178,7 @@ public class MeterTests {
   }
 
   @Test
-  public void test_04_NestedRun() {
+  public void test_04_NestedRun() throws NoSuchMethodException {
     final Meter meter = Meter.getInstance();
     assertNotNull("Expected instance.", meter);
 
@@ -140,7 +196,7 @@ public class MeterTests {
     final int id = meter.start("→→ Sub measurements");
     meter.loop(Sampling.ITERATIONS_L, "");
     for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
-
+      final Method m = DummyPojo.class.getMethod("getName");
       meter.recap();
     }
     meter.unloop();
@@ -154,5 +210,131 @@ public class MeterTests {
     meter.finish("← Smoke test");
 
     assertTrue("Nested measurement should have ID bigger zero", 0 < id);
+  }
+
+  @Test
+  public void test_05_CustomOutput() throws Exception {
+    final Meter meter = Meter.getInstance();
+
+    // register custom output provider
+    meter.setOutput(mOutput);
+
+    assertNotNull("Expected instance of the output provider", meter.getOutput());
+    assertEquals("Expected same instance", mOutput, meter.getOutput());
+
+    // try custom logger
+    meter.start("→ Custom output");
+    SystemClock.sleep(100);
+    meter.finish("← Custom output");
+
+    assertTrue("Expected not empty logs", mOutput.toString().length() > 0);
+  }
+
+  @Test
+  public void test_05_ReflectionSpeed() throws Exception {
+    final Meter meter = Meter.getInstance();
+
+    // register custom output provider
+    meter.setOutput(mOutput);
+
+    meter.start("→ Reflection");
+
+    final Method[] methods = DummyPojo.class.getMethods();
+    meter.beat("extract all methods");
+
+    Arrays.sort(methods, mMethodComparator);
+    meter.beat("optimize search");
+
+    meter.loop("");
+    for (int i = 0; i < Sampling.ITERATIONS_XXL; i++) {
+      final Method methodGet = DummyPojo.class.getMethod("getMemo");
+
+      if (null != methodGet) {
+        meter.recap();
+      }
+    }
+    meter.unloop("single GET Method by name");
+
+    meter.loop("");
+    for (int i = 0; i < Sampling.ITERATIONS_XXL; i++) {
+      final Method methodSet = DummyPojo.class.getMethod("setMemo", String.class);
+
+      if (null != methodSet) {
+        meter.recap();
+      }
+    }
+    meter.unloop("single SET Method by name");
+
+    meter.loop("");
+    for (int i = 0; i < Sampling.ITERATIONS_XXL; i++) {
+      final Method methodGet = DummyPojo.class.getMethod("getMemo");
+      final Method methodSet = DummyPojo.class.getMethod("setMemo", String.class);
+
+      if (null != methodGet && null != methodSet) {
+        meter.recap();
+      }
+    }
+    meter.unloop("single GET/SET Method by name");
+
+    meter.loop("");
+    for (int i = 0; i < Sampling.ITERATIONS_XXL; i++) {
+      final int indexGet = Arrays.binarySearch(methods, "getMemo", mObjectComparator);
+      final int indexSet = Arrays.binarySearch(methods, "setMemo", mObjectComparator);
+      final Method methodGet = methods[indexGet];
+      final Method methodSet = methods[indexSet];
+
+      if (null != methodGet && null != methodSet) {
+        meter.recap();
+      }
+    }
+    meter.unloop("methods binary search");
+
+    meter.finish("← Reflection");
+
+    // always fail
+    assertTrue(mOutput.toString(), false);
+  }
+
+  /* [ NESTED DECLARATIONS ] ======================================================================================= */
+
+  public class DummyPojo {
+    private String mId;
+    private String mName;
+    private String mExtra;
+
+    private String mMemo;
+
+    public String getId() {
+      return mId;
+    }
+
+    /* package */ void setId(final String id) {
+      mId = id;
+    }
+
+    public String getName() {
+      return mName;
+    }
+
+    private void setName(final String name) {
+      mName = name;
+    }
+
+    public String getExtra() {
+      return mExtra;
+    }
+
+    protected void setExtra(final String extra) {
+      mExtra = extra;
+    }
+
+    public String getMemo() {
+      return mMemo;
+    }
+
+    public void setMemo(final String memo) {
+      mMemo = memo;
+    }
+
   }
 }
