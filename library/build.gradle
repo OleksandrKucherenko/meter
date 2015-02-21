@@ -11,11 +11,11 @@ buildscript {
 //        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
     dependencies {
+        /* Android Build Plugin */
         classpath "com.android.tools.build:gradle:${gradlePluginVersion}"
-        /* https://github.com/kt3k/coveralls-gradle-plugin */
+        /* coveralls.io: https://github.com/kt3k/coveralls-gradle-plugin */
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
-        /* https://github.com/bintray/gradle-bintray-plugin
-         * https://github.com/bintray/bintray-examples/blob/master/gradle-aar-example/build.gradle */
+        /* bintray.com: https://github.com/bintray/gradle-bintray-plugin */
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:+'
         /* Allows project artifacts to be deployed to a Maven repository, or installed to the local Maven cache. */
         classpath 'com.github.dcendents:android-maven-plugin:+'
@@ -23,7 +23,6 @@ buildscript {
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.kt3k.coveralls'
 
 /* DEFINE REPOSITORY WITH LATEST ROBOLECTRIC VERSION */
 repositories {
@@ -34,14 +33,10 @@ repositories {
 }
 
 dependencies {
-    /* =========================== */
-    /*         DEBUG/RELEASE       */
-    /* =========================== */
+    /* [ DEBUG/RELEASE ] ============================================================================================ */
     compile fileTree(dir: 'libs', includes: ['*.jar'])
 
-    /* =========================== */
-    /*         UNIT TESTING        */
-    /* =========================== */
+    /* [ UNIT TESTING ] ============================================================================================= */
     if (useTesting) {
         /* Android Tests -------------------------------------------------------------------------------------------- */
         // unit tests libs. Rule: repeated Libs should be excluded.
@@ -152,48 +147,60 @@ android {
         }
     }
 
-//    testVariants.all { variant ->
-//        variant.outputs.each { output ->
-//            rootProject.logger.lifecycle(output.dump())
-//        }
-//    }
-
     /* https://sites.google.com/a/android.com/tools/tech-docs/unit-testing-support */
     testOptions {
         unitTests.returnDefaultValues = true
     }
 }
 
-/* UNIT Test results */
-task openTestResults(type: Exec, dependsOn: ["test"]) {
+/* [ UNIT Test Results ] ============================================================================================ */
+
+afterEvaluate {
+    tasks.matching { it.name.startsWith("test") }.each { test ->
+        // dependsOn, mustRunAfter, shouldRunAfter, doFirst, doLast, finalizedBy
+        test.finalizedBy openTestResults
+    }
+}
+
+task openTestResults(type: Exec) {
     // Task opens report file in default web-browser
     description = 'open Unit Tests results in current web browser'
     group = 'Code Quality'
 
     logger.lifecycle(":openTestResults")
 
+    // path is relative to current project path: {project}\\samples\\sample-01
+    // file:///C:/Android/_projects_/meter/library/build/reports/tests/index.html
+    def path = ""
+
+    ignoreExitValue true // task is not critical, ignore it failure
+
     // done: force open of HTML file
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        ignoreExitValue true
-        // path is relative to current project path:
-        //      {project}\\samples\\sample-01
-        def path = """.\\build\\reports\\tests\\index.html"""
+        path = """${project.rootDir}\\library\\build\\reports\\tests\\index.html"""
         commandLine "cmd.exe", '/C', path
-
-    } else {
-        // this build server, or Mac OS, or Linux - ignore this call
+    } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+        // build on Linux
+        commandLine "${rootProject.rootDir}/gradle/open-test-results.sh", path
+    } else if (Os.isFamily(Os.FAMILY_MAC)) {
+        // Mac OS
     }
 }
 
+/* [ COVERALLS ] ==================================================================================================== */
+
+apply plugin: 'com.github.kt3k.coveralls'
 coveralls.jacocoReportPath = 'build/outputs/reports/coverage/debug/report.xml'
 
-/* MAVEN REPOSITORY PUBLISHING */
-apply plugin: 'com.jfrog.bintray'
-apply plugin: 'com.github.dcendents.android-maven'
+/* [ ARTIFACTS ] ==================================================================================================== */
 
 // set output binary version. format: {versionName}.{versionCode}.{gitRevision}
 version = android.defaultConfig.versionName + "." + android.defaultConfig.versionCode + ".${GIT_REVISION}"
 group = LIBRARY_GROUP /* com.artfulbits */
+
+/* MAVEN REPOSITORY PUBLISHING */
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
 
 /* https://github.com/bintray/bintray-examples/blob/master/gradle-aar-example/build.gradle */
 bintray {

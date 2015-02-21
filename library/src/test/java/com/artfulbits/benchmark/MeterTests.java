@@ -6,7 +6,9 @@ import com.artfulbits.benchmark.junit.Sampling;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -32,6 +34,8 @@ public class MeterTests {
   private Comparator<Method> mMethodComparator;
 
   private Meter.Output mOutput;
+  @Rule
+  public TestName mTestName = new TestName();
 
 	/* [ IMPLEMENTATION & HELPERS ] ================================================================================== */
 
@@ -82,11 +86,16 @@ public class MeterTests {
         return mLog.toString();
       }
     };
+
+    mOutput.log(Level.INFO, "→", mTestName.getMethodName());
   }
 
   @After
   public void tearDown() {
     sAnother = null;
+
+    mOutput.log(Level.INFO, "←", mTestName.getMethodName());
+    System.out.append(mOutput.toString());
   }
 
   @Test
@@ -144,12 +153,14 @@ public class MeterTests {
     assertNotEquals(values, 0L, results.Start);
     assertNotEquals(values, 0L, results.Beat);
     assertNotEquals(values, 0L, results.Log);
-    assertNotEquals(values, 0L, results.Skip);
     assertNotEquals(values, 0L, results.Loop);
-    assertNotEquals(values, 0L, results.Recap);
     assertNotEquals(values, 0L, results.UnLoop);
-    assertNotEquals(values, 0L, results.End);
     assertNotEquals(values, 0L, results.Pop);
+
+    // flaky! skip method may take no time at all
+    // assertNotEquals(values, 0L, results.Skip);
+    // assertNotEquals(values, 0L, results.End);
+    // assertNotEquals(values, 0L, results.Recap);
   }
 
   @Test
@@ -246,7 +257,7 @@ public class MeterTests {
     meter.beat("optimize search");
 
     meter.loop("");
-    for (int i = 0; i < Sampling.ITERATIONS_XXL; i++) {
+    for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
       final Method methodGet = DummyPojo.class.getMethod("getMemo");
 
       if (null != methodGet) {
@@ -256,7 +267,7 @@ public class MeterTests {
     meter.unloop("single GET Method by name");
 
     meter.loop("");
-    for (int i = 0; i < Sampling.ITERATIONS_XXL; i++) {
+    for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
       final Method methodSet = DummyPojo.class.getMethod("setMemo", String.class);
 
       if (null != methodSet) {
@@ -266,7 +277,7 @@ public class MeterTests {
     meter.unloop("single SET Method by name");
 
     meter.loop("");
-    for (int i = 0; i < Sampling.ITERATIONS_XXL; i++) {
+    for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
       final Method methodGet = DummyPojo.class.getMethod("getMemo");
       final Method methodSet = DummyPojo.class.getMethod("setMemo", String.class);
 
@@ -277,7 +288,7 @@ public class MeterTests {
     meter.unloop("single GET/SET Method by name");
 
     meter.loop("");
-    for (int i = 0; i < Sampling.ITERATIONS_XXL; i++) {
+    for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
       final int indexGet = Arrays.binarySearch(methods, "getMemo", mObjectComparator);
       final int indexSet = Arrays.binarySearch(methods, "setMemo", mObjectComparator);
       final Method methodGet = methods[indexGet];
@@ -292,7 +303,7 @@ public class MeterTests {
     meter.finish("← Reflection");
 
     // always fail
-    assertTrue(mOutput.toString(), false);
+    //assertTrue(mOutput.toString(), false);
   }
 
   /* [ NESTED DECLARATIONS ] ======================================================================================= */
