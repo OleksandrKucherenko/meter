@@ -197,7 +197,7 @@ public final class Meter {
    */
   public int start(final String log) {
     int id = start();
-    mCurrent.Logs.append(mCurrent.Position.get() - 1, log);
+    log(log);
     return id;
   }
 

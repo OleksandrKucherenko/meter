@@ -5,7 +5,9 @@ import android.os.SystemClock;
 import com.artfulbits.benchmark.junit.Sampling;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -30,21 +32,20 @@ public class MeterTests {
   /* [ STATIC MEMBERS ] ============================================================================================ */
 
   private static Meter sAnother = null;
-  private Comparator<Object> mObjectComparator;
-  private Comparator<Method> mMethodComparator;
+  private static Comparator<Object> sObjectComparator;
+  private static Comparator<Method> sMethodComparator;
 
-  private Meter.Output mOutput;
   @Rule
   public TestName mTestName = new TestName();
+  private Meter.Output mOutput;
 
 	/* [ IMPLEMENTATION & HELPERS ] ================================================================================== */
 
-  @Before
-  public void setUp() {
-    sAnother = null;
-
+  //region Setup and TearDown
+  @BeforeClass
+  public static void setUpClass() {
     // sort by name
-    mMethodComparator = new Comparator<Method>() {
+    sMethodComparator = new Comparator<Method>() {
       @Override
       public int compare(final Method lhs, final Method rhs) {
         return lhs.getName().compareTo(rhs.getName());
@@ -52,7 +53,7 @@ public class MeterTests {
     };
 
     // find by name
-    mObjectComparator = new Comparator<Object>() {
+    sObjectComparator = new Comparator<Object>() {
       @Override
       public int compare(final Object lhs, final Object rhs) {
         if (lhs instanceof Method) {
@@ -70,6 +71,11 @@ public class MeterTests {
         return ((String) lhs).compareTo((String) rhs);
       }
     };
+  }
+
+  @Before
+  public void setUp() {
+    sAnother = null;
 
     mOutput = new Meter.Output() {
       private StringBuilder mLog = new StringBuilder(64 * 1024).append("\r\n");
@@ -97,6 +103,14 @@ public class MeterTests {
     mOutput.log(Level.INFO, "←", mTestName.getMethodName());
     System.out.append(mOutput.toString());
   }
+
+  @AfterClass
+  public static void tearDownClass() {
+    // do nothing for now
+  }
+  //endregion
+
+  /* [ TESTS ] ===================================================================================================== */
 
   @Test
   public void test_00_Instance() {
@@ -253,7 +267,7 @@ public class MeterTests {
     final Method[] methods = DummyPojo.class.getMethods();
     meter.beat("extract all methods");
 
-    Arrays.sort(methods, mMethodComparator);
+    Arrays.sort(methods, sMethodComparator);
     meter.beat("optimize search");
 
     meter.loop("");
@@ -289,8 +303,8 @@ public class MeterTests {
 
     meter.loop("");
     for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
-      final int indexGet = Arrays.binarySearch(methods, "getMemo", mObjectComparator);
-      final int indexSet = Arrays.binarySearch(methods, "setMemo", mObjectComparator);
+      final int indexGet = Arrays.binarySearch(methods, "getMemo", sObjectComparator);
+      final int indexSet = Arrays.binarySearch(methods, "setMemo", sObjectComparator);
       final Method methodGet = methods[indexGet];
       final Method methodSet = methods[indexSet];
 
