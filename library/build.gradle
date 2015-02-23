@@ -160,8 +160,43 @@ afterEvaluate {
         // dependsOn, mustRunAfter, shouldRunAfter, doFirst, doLast, finalizedBy
         test.finalizedBy openTestResults
     }
+    /* Adjust Mockable Android task  */
+    tasks.matching { it.name.startsWith('mockableAndroidJar') }.each { mock ->
+        // http://goo.gl/wXhBIF --> MockableJarGenerator.java
+        mock.finalizedBy patchMockableAndroidJar
+    }
+//    tasks.matching { it.name.startsWith("preCompile") }.matching { it.name.endsWith("UnitTestJava") }.each { t ->
+//        println 'Found test runner: ' + t.name
+//        println t.dump()
+//    }
 }
 
+/* Create a copy of original mockable Jar */
+task copyMockableAndroidJar(type: Copy) {
+    from "${project.buildDir}\\intermediates\\mockable-android-${androidTargetSdkVersion}.jar"
+    into "${project.buildDir}\\intermediates\\"
+
+    rename { String fileName ->
+        fileName.replace("mockable-android-${androidTargetSdkVersion}.jar",
+                "mockable-android-${androidTargetSdkVersion}-original.jar")
+    }
+}
+/* Exclude classes that we want to replace by own implementation  */
+task patchMockableAndroidJar(type: Zip, dependsOn: copyMockableAndroidJar) {
+    description = 'patch mockable-android-${api}.jar by own classes'
+    group = 'Code Quality'
+
+    // set archive name and destination
+    destinationDir = file("${project.buildDir}\\intermediates")
+    archiveName = "mockable-android-${androidTargetSdkVersion}.jar"
+    def source = "${project.buildDir}\\intermediates\\mockable-android-${androidTargetSdkVersion}-original.jar"
+
+    // exclude from Mocks Jar classes which we replace by own implementation
+    from(zipTree(source)) {
+        exclude '**/android/util/SparseArray.class'
+    }
+}
+/* Open Unit tests results report in OS browser */
 task openTestResults(type: Exec) {
     // Task opens report file in default web-browser
     description = 'open Unit Tests results in current web browser'
@@ -290,17 +325,3 @@ artifacts {
     archives javadocJar
     archives sourcesJar
 }
-
-/* Adjust Mockable Android task  */
-//afterEvaluate {
-//    tasks.matching { it.name.startsWith('mockableAndroidJar') }.each { mock ->
-//        // https://android.googlesource.com/platform/tools/base/+/studio-1.1-dev/build-system/builder/src/main/java/com/android/builder/testing/MockableJarGenerator.java
-//        println 'Found task: ' + mock.name
-////        println mock.dump()
-//    }
-//
-//    tasks.matching { it.name.startsWith("preCompile") }.matching { it.name.endsWith("UnitTestJava") }.each { t ->
-//        println 'Found test runner: ' + t.name
-////        println t.dump()
-//    }
-//}
