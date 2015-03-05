@@ -1,7 +1,4 @@
 // Library: meter, Android Micro Benchmarking
-
-import org.apache.tools.ant.taskdefs.condition.Os
-
 buildscript {
     repositories {
         jcenter()
@@ -23,6 +20,7 @@ buildscript {
 }
 
 apply plugin: 'com.android.library'
+apply from: "${rootProject.rootDir}/gradle/config/quality.gradle"
 
 /* DEFINE REPOSITORY WITH LATEST ROBOLECTRIC VERSION */
 repositories {
@@ -151,39 +149,9 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
-}
 
-/* [ UNIT Test Results ] ============================================================================================ */
-
-afterEvaluate {
-    tasks.matching { it.name.startsWith("test") }.each { test ->
-        // dependsOn, mustRunAfter, shouldRunAfter, doFirst, doLast, finalizedBy
-        test.finalizedBy openTestResults
-    }
-}
-
-task openTestResults(type: Exec) {
-    // Task opens report file in default web-browser
-    description = 'open Unit Tests results in current web browser'
-    group = 'Code Quality'
-
-    logger.lifecycle(":openTestResults")
-
-    // path is relative to current project path: {project}\\samples\\sample-01
-    // file:///C:/Android/_projects_/meter/library/build/reports/tests/index.html
-    def path = ""
-
-    ignoreExitValue true // task is not critical, ignore it failure
-
-    // done: force open of HTML file
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        path = """${project.rootDir}\\library\\build\\reports\\tests\\index.html"""
-        commandLine "cmd.exe", '/C', path
-    } else if (Os.isFamily(Os.FAMILY_UNIX)) {
-        // build on Linux
-        commandLine "${rootProject.rootDir}/gradle/open-test-results.sh", path
-    } else if (Os.isFamily(Os.FAMILY_MAC)) {
-        // Mac OS
+    lintOptions {
+        disable 'GradleDynamicVersion'
     }
 }
 

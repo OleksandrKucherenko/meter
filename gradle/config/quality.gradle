@@ -1,155 +1,375 @@
 // tools: Code Analysis Tools
+import org.apache.tools.ant.taskdefs.condition.Os
 
-apply plugin: 'checkstyle'
-apply plugin: 'findbugs'
-apply plugin: 'pmd'
-apply plugin: 'cpd'
-apply plugin: 'jdepend'
-apply from: "${rootProject.rootDir}/gradle/config/classycle.gradle"
-//apply from: "${rootProject.rootDir}/gradle/config/javancss.gradle"
+buildscript {
+    repositories {
+        jcenter()
+        mavenLocal()
+        mavenCentral()
+    }
+    dependencies {
+        // https://github.com/aaschmid/gradle-cpd-plugin
+        classpath 'de.aaschmid.gradle.plugins:gradle-cpd-plugin:+'
+    }
+}
 
-// configure dependencies
-check.dependsOn 'checkstyle', 'findbugs', 'cpd', 'jdepend', 'pmdResults' //, 'javancss'
-
-task checkstyle(type: Checkstyle) {
-    description = 'execute checkstyle tool on project source code'
+task openCheckResults(dependsOn: ['check']) {
+    description = 'Open all Quality tools reports in Web browser'
     group = 'Code Quality'
 
-    // important: keep those two flags, otherwise Jenkins will fail build on any rule break with severity 'error'
-    ignoreFailures = true
-    showViolations = false
+    // do nothing, it used for dependency graph building only
+}
 
-    configFile file("${project.rootDir}/config/quality/checkstyle/checkstyle.xml")
-    source 'src'
-    include '**/*.java'
+if (ENABLE_QUALITY) {
+    /* [ LINT ] ===================================================================================================== */
 
-    // exclude auto-generated code and 3rd party libs
-    exclude '**/build/generated/**', '**/build/source/**',
-            '**/com/android/**', '**/com/google/**', '**/android/support/**',
-            '**/BuildConfig.java', '**/R.java'
+    task lintOpenResults(type: Exec, dependsOn: ['lint']) {
+        description = 'open Android Lint results in current web browser'
+        group = 'Code Quality'
 
-    classpath = files()
+        // path is relative to current project path: {project}\\samples\\sample-01
+        // file:/C:/Android/_projects_/meter/samples/sample-01/build/outputs/lint-results.html
+        def path = ""
 
-    reports {
-        xml.enabled = true
+        ignoreExitValue true // task is not critical, ignore it failure
+
+        // done: force open of HTML file
+        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            path = """${project.buildDir}\\outputs\\lint-results.html"""
+            rootProject.logger.lifecycle('  report: ' + path)
+            commandLine "cmd.exe", '/C', path
+        } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+            // build on Linux
+            commandLine "${rootProject.rootDir}/gradle/open-test-results.sh", path
+        } else if (Os.isFamily(Os.FAMILY_MAC)) {
+            // Mac OS
+        }
+    }
+
+    // dependsOn, mustRunAfter, shouldRunAfter, doFirst, doLast, finalizedBy
+    openCheckResults.dependsOn 'lintOpenResults'
+
+    /* [ UNIT Test Results ] ======================================================================================== */
+    if (useTesting) {
+        // attach task to build variants
+//        afterEvaluate {
+//            tasks.matching { it.name.startsWith("test") && !it.name.equals("testOpenResults") }.each { test ->
+//                // dependsOn, mustRunAfter, shouldRunAfter, doFirst, doLast, finalizedBy
+//                test.finalizedBy testOpenResults
+//            }
+//        }
+
+        task testOpenResults(type: Exec, dependsOn: ['test']) {
+            // Task opens report file in default web-browser
+            description = 'open Unit Tests results in current web browser'
+            group = 'Code Quality'
+
+            // path is relative to current project path: {project}\\samples\\sample-01
+            // file:///C:/Android/_projects_/meter/library/build/reports/tests/index.html
+            def path = ""
+
+            ignoreExitValue true // task is not critical, ignore it failure
+
+            // done: force open of HTML file
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                path = """${project.buildDir}\\reports\\tests\\debug\\index.html"""
+                rootProject.logger.lifecycle('  report: ' + path)
+                commandLine "cmd.exe", '/C', path
+            } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+                // build on Linux
+                commandLine "${rootProject.rootDir}/gradle/open-test-results.sh", path
+            } else if (Os.isFamily(Os.FAMILY_MAC)) {
+                // Mac OS
+            }
+        }
+
+        openCheckResults.dependsOn 'testOpenResults'
     }
 }
 
-task findbugs(type: FindBugs, dependsOn: ['assembleDebug']) {
-    description = 'execute findbugs tool on project compiled code'
-    group = 'Code Quality'
+if (ENABLE_CHECKSTYLE) {
+    apply plugin: 'checkstyle'
 
-//    logger.lifecycle("==================> buildDir: " + "$project.buildDir")
-//    logger.lifecycle("==================> rootDir: " + "${project.rootDir}")
+    task checkstyle(type: Checkstyle) {
+        description = 'execute checkstyle tool on project source code'
+        group = 'Code Quality'
 
-    ignoreFailures = true
+        // important: keep those two flags, otherwise Jenkins will fail build on any rule break with severity 'error'
+        ignoreFailures = true
+        showViolations = false
 
-    effort = "max"
-    reportLevel = "high"
-    excludeFilter = new File("${project.rootDir}/config/quality/findbugs/findbugs-filter.xml")
-    classes = files("${project.buildDir}/intermediates/classes")
+        configFile file("${rootProject.rootDir}/gradle/config/quality/checkstyle/checkstyle.xml")
+        source 'src'
+        include '**/*.java'
 
-    source 'src'
-    include '**/*.java'
-    // exclude auto-generated code and 3rd party libs
-    exclude '**/build/generated/**', '**/build/source/**',
-            '**/com/android/**', '**/com/google/**', '**/android/support/**'
+        // exclude auto-generated code and 3rd party libs
+        exclude '**/build/generated/**', '**/build/source/**',
+                '**/com/android/**', '**/com/google/**', '**/android/support/**',
+                '**/BuildConfig.java', '**/R.java'
 
-    reports {
-        xml {
-            destination "$project.buildDir/reports/findbugs/findbugs.xml"
-            xml.withMessages true
-            //enabled = true
-        }
-        //html.enabled = false
-    }
+        classpath = files()
 
-    classpath = files()
-}
-
-pmd {
-    // specify new version, otherwise will be used old v4.3
-    toolVersion = "5.1.0"
-    targetJdk = "1.6"
-
-    ignoreFailures = true
-
-    ruleSets = ["rulesets/java/basic.xml",
-                "rulesets/java/braces.xml",
-                "rulesets/java/imports.xml",
-                "rulesets/java/empty.xml",
-                "rulesets/java/codesize.xml",
-                "rulesets/java/design.xml",
-                "rulesets/java/optimizations.xml",
-                "rulesets/java/strings.xml",
-                "rulesets/java/unusedcode.xml"]
-
-    ruleSetFiles = files("${project.rootDir}/config/quality/pmd/pmd-ruleset.xml")
-
-    reportsDir file("${project.buildDir}/reports/pmd")
-
-    sourceSets {
-        results {
-            // leave it empty, source set will be configured later
-            // otherwise we will have a conflict with java compiler
+        reports {
+            xml.enabled = true
         }
     }
+
+    task checkstyleHtmlReport(dependsOn: ['checkstyle']) {
+        description = 'Checkstyle HTML report generation'
+        group = 'Code Quality'
+
+        if (file("${project.buildDir}/reports/checkstyle/findbugs.xml").exists()) {
+            ant.xslt(in: "${project.buildDir}/reports/checkstyle/checkstyle.xml",
+                    style: "${project.rootDir}/gradle/config/quality/checkstyle/checkstyle-noframe-sorted.xsl",
+                    out: "${project.buildDir}/reports/checkstyle/checkstyle-results.html"
+            )
+        }
+    }
+
+    task checkstyleOpenResults(type: Exec, dependsOn: ['checkstyleHtmlReport']) {
+        description = 'open Checkstyle results in current web browser'
+        group = 'Code Quality'
+
+        // path is relative to current project path: {project}\\samples\\sample-01
+        // file:/C:/Android/_projects_/meter/samples/sample-01/build/outputs/lint-results.html
+        def path = ""
+
+        // task is not critical, ignore it failure
+        ignoreExitValue true
+
+        // done: force open of HTML file
+        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            path = """${project.buildDir}\\reports\\checkstyle\\checkstyle-results.html"""
+            rootProject.logger.lifecycle('  report: ' + path)
+            commandLine "cmd.exe", '/C', path
+        } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+            // build on Linux
+            commandLine "${rootProject.rootDir}/gradle/open-test-results.sh", path
+        } else if (Os.isFamily(Os.FAMILY_MAC)) {
+            // Mac OS
+        }
+    }
+
+    check.dependsOn 'checkstyle'
+    openCheckResults.dependsOn 'checkstyleHtmlReport'
 }
 
-tasks.pmdResults {
-    description = 'execute PMD tool on project source code'
-    group = 'Code Quality'
+if (ENABLE_FINDBUGS) {
+    apply plugin: 'findbugs'
 
-    source 'src'
+    task findbugs(type: FindBugs, dependsOn: ['assembleDebug']) {
+        description = 'execute findbugs tool on project compiled code'
+        group = 'Code Quality'
 
-    // exclude auto-generated code and 3rd party libs
-    exclude '**/build/generated/**',
-            '**/build/source/**',
-            '**/com/android/**',
-            '**/com/google/**',
-            '**/android/support/**'
+        ignoreFailures = true
 
-    reports {
-        xml {
-            enabled = true
-            destination = file("${project.buildDir}/reports/pmd/pmd.xml")
+        effort = "max"
+        reportLevel = "high"
+        excludeFilter = new File("${project.rootDir}/gradle/config/quality/findbugs/findbugs-filter.xml")
+        classes = files("${project.buildDir}/intermediates/classes")
+
+        source 'src'
+        include '**/*.java'
+        // exclude auto-generated code and 3rd party libs
+        exclude '**/build/generated/**', '**/build/source/**',
+                '**/com/android/**', '**/com/google/**', '**/android/support/**'
+
+        reports {
+            xml {
+                destination "${project.buildDir}/reports/findbugs/findbugs.xml"
+                xml.withMessages true
+                //enabled = true
+            }
+
+            // XML and HTML cannot be generated in one call, so HTML we produce by custom task
+            html.enabled false
         }
-        html {
-            enabled = false
-            destination = file("${project.buildDir}/reports/pmd/pmd.html")
+
+        classpath = files()
+    }
+
+    task findbugsHtmlReport(dependsOn: ['findbugs']) {
+        description = 'Findbugs HTML report generation'
+        group = 'Code Quality'
+
+//        inputs.dir("${project.buildDir}/reports/findbugs")
+//        outputs.dir("${project.buildDir}/reports/findbugs")
+
+        if (file("${project.buildDir}/reports/findbugs/findbugs.xml").exists()) {
+            ant.xslt(in: "${project.buildDir}/reports/findbugs/findbugs.xml",
+                    style: "${project.rootDir}/gradle/config/quality/findbugs/findbugs.xsl",
+                    out: "${project.buildDir}/reports/findbugs/findbugs-results.html"
+            )
+        }
+    }
+
+    task findbugsOpenResults(type: Exec, dependsOn: ['findbugsHtmlReport']) {
+        description = 'open Findbugs results in current web browser'
+        group = 'Code Quality'
+
+        // path is relative to current project path: {project}\\samples\\sample-01
+        // file:/C:/Android/_projects_/meter/samples/sample-01/build/outputs/lint-results.html
+        def path = ""
+
+        // task is not critical, ignore it failure
+        ignoreExitValue true
+
+        // done: force open of HTML file
+        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            path = """${project.buildDir}\\reports\\findbugs\\findbugs-results.html"""
+            rootProject.logger.lifecycle('  report: ' + path)
+            commandLine "cmd.exe", '/C', path
+        } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+            // build on Linux
+            commandLine "${rootProject.rootDir}/gradle/open-test-results.sh", path
+        } else if (Os.isFamily(Os.FAMILY_MAC)) {
+            // Mac OS
+        }
+    }
+
+    check.dependsOn 'findbugs'
+    openCheckResults.dependsOn 'findbugsOpenResults'
+}
+
+if (ENABLE_PMD) {
+    apply plugin: 'pmd'
+    check.dependsOn 'pmdResults'
+
+    pmd {
+        // specify new version, otherwise will be used old v4.3
+        toolVersion = "5.1.0"
+        targetJdk = "1.6"
+
+        ignoreFailures = true
+
+        ruleSets = ["rulesets/java/basic.xml",
+                    "rulesets/java/braces.xml",
+                    "rulesets/java/imports.xml",
+                    "rulesets/java/empty.xml",
+                    "rulesets/java/codesize.xml",
+                    "rulesets/java/design.xml",
+                    "rulesets/java/optimizations.xml",
+                    "rulesets/java/strings.xml",
+                    "rulesets/java/unusedcode.xml"]
+
+        ruleSetFiles = files("${project.rootDir}/gradle/config/quality/pmd/pmd-ruleset.xml")
+
+        reportsDir file("${project.buildDir}/reports/pmd")
+
+        sourceSets {
+            results {
+                // leave it empty, source set will be configured later
+                // otherwise we will have a conflict with java compiler
+            }
+        }
+    }
+
+    tasks.pmdResults {
+        description = 'execute PMD tool on project source code'
+        group = 'Code Quality'
+
+        source 'src'
+
+        // exclude auto-generated code and 3rd party libs, resource folders
+        exclude '**/build/generated/**',
+                '**/build/source/**',
+                '**/com/android/**',
+                '**/com/google/**',
+                '**/android/support/**',
+                '**/res/**'
+
+        reports {
+            xml {
+                enabled = true
+                destination = file("${project.buildDir}/reports/pmd/pmd.xml")
+            }
+            html {
+                enabled = true
+                destination = file("${project.buildDir}/reports/pmd/pmd-results.html")
+            }
+        }
+    }
+
+    task pmdOpenResults(type: Exec, dependsOn: ['pmdResults']) {
+        description = 'open PMD results in current web browser'
+        group = 'Code Quality'
+
+        // path is relative to current project path: {project}\\samples\\sample-01
+        // file:/C:/Android/_projects_/meter/samples/sample-01/build/outputs/lint-results.html
+        def path = ""
+
+        // task is not critical, ignore it failure
+        ignoreExitValue true
+
+        // done: force open of HTML file
+        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            path = """${project.buildDir}\\reports\\pmd\\pmd-results.html"""
+            rootProject.logger.lifecycle('  report: ' + path)
+            commandLine "cmd.exe", '/C', path
+        } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+            // build on Linux
+            commandLine "${rootProject.rootDir}/gradle/open-test-results.sh", path
+        } else if (Os.isFamily(Os.FAMILY_MAC)) {
+            // Mac OS
+        }
+    }
+
+    openCheckResults.dependsOn 'pmdOpenResults'
+}
+
+if (ENABLE_CPD) {
+    apply plugin: 'cpd'
+    check.dependsOn 'cpd'
+    tasks.cpd {
+        description = 'execute CPD (copy/paste duplicates) tool on project code'
+        group = 'Code Quality'
+
+        reports {
+            csv.enabled = false
+            text.enabled = false
+            xml {
+                enabled = true
+                destination file("$project.buildDir/reports/cpd/cpd.xml")
+            }
+        }
+        source = files('src')
+    }
+}
+
+if (ENABLE_JDEPEND) {
+    apply plugin: 'jdepend'
+    check.dependsOn 'jdepend'
+
+    task jdepend(type: JDepend, dependsOn: ['assembleDebug']) {
+        description = 'execute JDepend tool on project binaries'
+        group = 'Code Quality'
+
+        classesDir = file("${project.buildDir}/intermediates/classes")
+
+        reports {
+            text {
+                enabled = false
+                destination = file("${project.buildDir}/reports/jdepend/jdepend-results.txt")
+            }
+            xml {
+                enabled = !text.enabled
+                destination = file("${project.buildDir}/reports/jdepend/jdepend-results.xml")
+            }
         }
     }
 }
 
-tasks.cpd {
-    description = 'execute CPD (copy/paste duplicates) tool on project code'
-    group = 'Code Quality'
+if (ENABLE_JAVANCSS) {
+    apply from: "${rootProject.rootDir}/gradle/config/javancss.gradle"
 
-    reports {
-        csv.enabled = false
-        text.enabled = false
-        xml {
-            enabled = true
-            destination file("$project.buildDir/reports/cpd/cpd.xml")
-        }
-    }
-    source = files('src')
+    // configure dependencies
+    check.dependsOn 'javancss'
 }
 
-task jdepend(type: JDepend, dependsOn: ['assembleDebug']) {
-    description = 'execute JDepend tool on project binaries'
-    group = 'Code Quality'
-
-    classesDir = file("${project.buildDir}/intermediates/classes")
-
-    reports {
-        text {
-            enabled = false
-            destination = file("${project.buildDir}/reports/jdepend/jdepend-results.txt")
-        }
-        xml {
-            enabled = !text.enabled
-            destination = file("${project.buildDir}/reports/jdepend/jdepend-results.xml")
-        }
-    }
+if (ENABLE_CLASSYCLE) {
+    apply from: "${rootProject.rootDir}/gradle/config/classycle.gradle"
 }
+
+// References:
+//   http://www.sw-engineering-candies.com/blog-1/howtotransformtheresultsfromfindbugscheckstyleandpmdintoasinglehtmlreportwithxslt20andjava
+//   https://chromium.googlesource.com/chromium/deps/findbugs/+/b9b6889b94a3081615d5ca62173e9816a31cc1eb/src/xsl/default.xsl

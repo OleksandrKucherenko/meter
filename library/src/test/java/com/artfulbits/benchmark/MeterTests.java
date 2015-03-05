@@ -31,13 +31,17 @@ import static org.junit.Assert.assertTrue;
 public class MeterTests {
   /* [ STATIC MEMBERS ] ============================================================================================ */
 
-  private static Meter sAnother = null;
   private static Comparator<Object> sObjectComparator;
   private static Comparator<Method> sMethodComparator;
 
+  /* [ INJECTIONS ] ================================================================================================ */
   @Rule
   public TestName mTestName = new TestName();
+
+  /* [ MEMBERS ] =================================================================================================== */
+
   private Meter.Output mOutput;
+  private transient Meter mAnotherInstance = null;
 
 	/* [ IMPLEMENTATION & HELPERS ] ================================================================================== */
 
@@ -75,7 +79,7 @@ public class MeterTests {
 
   @Before
   public void setUp() {
-    sAnother = null;
+    mAnotherInstance = null;
 
     mOutput = new Meter.Output() {
       private StringBuilder mLog = new StringBuilder(64 * 1024).append("\r\n");
@@ -98,7 +102,7 @@ public class MeterTests {
 
   @After
   public void tearDown() {
-    sAnother = null;
+    mAnotherInstance = null;
 
     mOutput.log(Level.INFO, "←", mTestName.getMethodName());
     System.out.append(mOutput.toString());
@@ -121,7 +125,7 @@ public class MeterTests {
 
   @Test
   public void test_01_Instance_Threads() {
-    assertNull("Reference should be null", sAnother);
+    assertNull("Reference should be null", mAnotherInstance);
 
     final Meter meter = Meter.getInstance();
     assertNotNull("Instance for current thread expected", meter);
@@ -129,7 +133,7 @@ public class MeterTests {
     final Thread t = new Thread(new Runnable() {
       @Override
       public void run() {
-        sAnother = Meter.getInstance();
+        mAnotherInstance = Meter.getInstance();
 
         // notify that instance extracted
         synchronized (meter) {
@@ -147,8 +151,8 @@ public class MeterTests {
     } catch (final Throwable ignored) {
     }
 
-    assertNotNull("Expected another instance of the Meter class", sAnother);
-    assertNotEquals("Expected different instances for each thread.", meter, sAnother);
+    assertNotNull("Expected another instance of the Meter class", mAnotherInstance);
+    assertNotEquals("Expected different instances for each thread.", meter, mAnotherInstance);
   }
 
   @Test

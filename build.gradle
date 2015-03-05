@@ -97,6 +97,16 @@ allprojects {
         LIBRARY_LIC = project.LIBRARY_LIC
         LIBRARY_LIC_URL = project.LIBRARY_LIC_URL
         PUBLISHING_DRY_RUN = Boolean.parseBoolean(project.PUBLISHING_DRY_RUN)
+
+        /* Quality tools */
+        ENABLE_QUALITY = true
+        ENABLE_PMD = ENABLE_QUALITY & true
+        ENABLE_CPD = ENABLE_QUALITY & false
+        ENABLE_JDEPEND = ENABLE_QUALITY & false
+        ENABLE_CHECKSTYLE = ENABLE_QUALITY & true
+        ENABLE_FINDBUGS = ENABLE_QUALITY & true
+        ENABLE_JAVANCSS = ENABLE_QUALITY & false
+        ENABLE_CLASSYCLE = ENABLE_QUALITY & false
     }
 }
 

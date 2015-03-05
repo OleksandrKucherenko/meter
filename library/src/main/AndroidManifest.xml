@@ -1,10 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.artfulbits.benchmark">
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.artfulbits.benchmark"
+          tools:ignore="GradleOverrides">
 
-  <uses-sdk
-      android:minSdkVersion="10"
-      android:targetSdkVersion="19"/>
+    <uses-sdk
+        android:minSdkVersion="10"
+        android:targetSdkVersion="21"/>
 
-  <application/>
+    <application/>
 
 </manifest>
