@@ -1,7 +1,4 @@
 // Library: meter, Android Micro Benchmarking
-
-import org.apache.tools.ant.taskdefs.condition.Os
-
 buildscript {
     repositories {
         jcenter()
@@ -185,9 +182,9 @@ task patchMockableAndroidJar(type: Zip, dependsOn: copyMockableAndroidJar) {
     group = 'Code Quality'
 
     // set archive name and destination
-    destinationDir = file("${project.buildDir}\\intermediates")
+    destinationDir = file("${project.buildDir}/intermediates")
     archiveName = "mockable-android-${androidTargetSdkVersion}.jar"
-    def source = "${project.buildDir}\\intermediates\\mockable-android-${androidTargetSdkVersion}-original.jar"
+    def source = "${project.buildDir}/intermediates/mockable-android-${androidTargetSdkVersion}-original.jar"
 
     // exclude from Mocks Jar classes which we replace by own implementation
     from(zipTree(source)) {
@@ -198,7 +195,7 @@ task patchMockableAndroidJar(type: Zip, dependsOn: copyMockableAndroidJar) {
 /* [ COVERALLS ] ==================================================================================================== */
 
 apply plugin: 'com.github.kt3k.coveralls'
-coveralls.jacocoReportPath = 'build/outputs/reports/coverage/debug/report.xml'
+coveralls.jacocoReportPath = "${project.buildDir}/outputs/reports/coverage/debug/report.xml"
 
 /* [ ARTIFACTS ] ==================================================================================================== */
 
