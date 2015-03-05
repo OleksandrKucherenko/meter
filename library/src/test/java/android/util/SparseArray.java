@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.mock;
+package android.util;
 
 
 /**
