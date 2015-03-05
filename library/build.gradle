@@ -11,11 +11,11 @@ buildscript {
 //        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
     dependencies {
+        /* Android Build Plugin */
         classpath "com.android.tools.build:gradle:${gradlePluginVersion}"
-        /* https://github.com/kt3k/coveralls-gradle-plugin */
+        /* coveralls.io: https://github.com/kt3k/coveralls-gradle-plugin */
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
-        /* https://github.com/bintray/gradle-bintray-plugin
-         * https://github.com/bintray/bintray-examples/blob/master/gradle-aar-example/build.gradle */
+        /* bintray.com: https://github.com/bintray/gradle-bintray-plugin */
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:+'
         /* Allows project artifacts to be deployed to a Maven repository, or installed to the local Maven cache. */
         classpath 'com.github.dcendents:android-maven-plugin:+'
@@ -23,7 +23,7 @@ buildscript {
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.kt3k.coveralls'
+apply from: "${rootProject.rootDir}/gradle/config/quality.gradle"
 
 /* DEFINE REPOSITORY WITH LATEST ROBOLECTRIC VERSION */
 repositories {
@@ -34,14 +34,10 @@ repositories {
 }
 
 dependencies {
-    /* =========================== */
-    /*         DEBUG/RELEASE       */
-    /* =========================== */
+    /* [ DEBUG/RELEASE ] ============================================================================================ */
     compile fileTree(dir: 'libs', includes: ['*.jar'])
 
-    /* =========================== */
-    /*         UNIT TESTING        */
-    /* =========================== */
+    /* [ UNIT TESTING ] ============================================================================================= */
     if (useTesting) {
         /* Android Tests -------------------------------------------------------------------------------------------- */
         // unit tests libs. Rule: repeated Libs should be excluded.
@@ -152,48 +148,67 @@ android {
         }
     }
 
-//    testVariants.all { variant ->
-//        variant.outputs.each { output ->
-//            rootProject.logger.lifecycle(output.dump())
-//        }
-//    }
-
     /* https://sites.google.com/a/android.com/tools/tech-docs/unit-testing-support */
     testOptions {
         unitTests.returnDefaultValues = true
     }
-}
 
-/* UNIT Test results */
-task openTestResults(type: Exec, dependsOn: ["test"]) {
-    // Task opens report file in default web-browser
-    description = 'open Unit Tests results in current web browser'
-    group = 'Code Quality'
-
-    logger.lifecycle(":openTestResults")
-
-    // done: force open of HTML file
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        ignoreExitValue true
-        // path is relative to current project path:
-        //      {project}\\samples\\sample-01
-        def path = """.\\build\\reports\\tests\\index.html"""
-        commandLine "cmd.exe", '/C', path
-
-    } else {
-        // this build server, or Mac OS, or Linux - ignore this call
+    lintOptions {
+        disable 'GradleDynamicVersion'
     }
 }
 
+/* [ UNIT Test Results ] ============================================================================================ */
+
+afterEvaluate {
+    /* Adjust Mockable Android task  */
+    tasks.matching { it.name.startsWith('mockableAndroidJar') }.each { mock ->
+        // http://goo.gl/wXhBIF --> MockableJarGenerator.java
+        mock.finalizedBy patchMockableAndroidJar
+    }
+}
+
+/* Create a copy of original mockable Jar */
+task copyMockableAndroidJar(type: Copy) {
+    from "${project.buildDir}\\intermediates\\mockable-android-${androidTargetSdkVersion}.jar"
+    into "${project.buildDir}\\intermediates\\"
+
+    rename { String fileName ->
+        fileName.replace("mockable-android-${androidTargetSdkVersion}.jar",
+                "mockable-android-${androidTargetSdkVersion}-original.jar")
+    }
+}
+
+/* Exclude classes that we want to replace by own implementation  */
+task patchMockableAndroidJar(type: Zip, dependsOn: copyMockableAndroidJar) {
+    description = 'patch mockable-android-${api}.jar by own classes'
+    group = 'Code Quality'
+
+    // set archive name and destination
+    destinationDir = file("${project.buildDir}\\intermediates")
+    archiveName = "mockable-android-${androidTargetSdkVersion}.jar"
+    def source = "${project.buildDir}\\intermediates\\mockable-android-${androidTargetSdkVersion}-original.jar"
+
+    // exclude from Mocks Jar classes which we replace by own implementation
+    from(zipTree(source)) {
+        exclude '**/android/util/SparseArray.class'
+    }
+}
+
+/* [ COVERALLS ] ==================================================================================================== */
+
+apply plugin: 'com.github.kt3k.coveralls'
 coveralls.jacocoReportPath = 'build/outputs/reports/coverage/debug/report.xml'
 
-/* MAVEN REPOSITORY PUBLISHING */
-apply plugin: 'com.jfrog.bintray'
-apply plugin: 'com.github.dcendents.android-maven'
+/* [ ARTIFACTS ] ==================================================================================================== */
 
 // set output binary version. format: {versionName}.{versionCode}.{gitRevision}
 version = android.defaultConfig.versionName + "." + android.defaultConfig.versionCode + ".${GIT_REVISION}"
 group = LIBRARY_GROUP /* com.artfulbits */
+
+/* MAVEN REPOSITORY PUBLISHING */
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
 
 /* https://github.com/bintray/bintray-examples/blob/master/gradle-aar-example/build.gradle */
 bintray {
@@ -283,17 +298,3 @@ artifacts {
     archives javadocJar
     archives sourcesJar
 }
-
-/* Adjust Mockable Android task  */
-//afterEvaluate {
-//    tasks.matching { it.name.startsWith('mockableAndroidJar') }.each { mock ->
-//        // https://android.googlesource.com/platform/tools/base/+/studio-1.1-dev/build-system/builder/src/main/java/com/android/builder/testing/MockableJarGenerator.java
-//        println 'Found task: ' + mock.name
-////        println mock.dump()
-//    }
-//
-//    tasks.matching { it.name.startsWith("preCompile") }.matching { it.name.endsWith("UnitTestJava") }.each { t ->
-//        println 'Found test runner: ' + t.name
-////        println t.dump()
-//    }
-//}

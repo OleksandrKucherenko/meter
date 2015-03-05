@@ -24,7 +24,8 @@ import java.util.logging.Level;
  * Performance measurement class. Should be used for micro-benchmarking and
  * comparison of different implementations. Class implements very simple logic.
  */
-@SuppressWarnings("UnusedDeclaration")
+@SuppressWarnings({"UnusedDeclaration", "PMD.UselessParentheses", "PMD.GodClass",
+    "PMD.TooManyMethods", "PMD.ExcessiveClassLength", "PMD.ExcessivePublicCount"})
 @SuppressLint("DefaultLocale")
 public final class Meter {
     /* [ CONSTANTS ] ============================================================================================= */
@@ -196,8 +197,8 @@ public final class Meter {
    * @return unique id of the benchmark object.
    */
   public int start(final String log) {
-    int id = start();
-    mCurrent.Logs.append(mCurrent.Position.get() - 1, log);
+    final int id = start();
+    log(log);
     return id;
   }
 
@@ -325,6 +326,7 @@ public final class Meter {
   }
 
   /** Print captured statistics into logcat. */
+  @SuppressWarnings({"PMD.AvoidInstantiatingObjectsInLoops"})
   public void stats() {
     final Output log = getOutput();
     final Config config = getConfig();
@@ -339,7 +341,7 @@ public final class Meter {
     }
 
     // dump all
-    for (Step step : steps) {
+    for (final Step step : steps) {
       log.log((step.IsSkipped) ? Level.WARNING : Level.FINEST, config.OutputTag, step.toString());
     }
 
@@ -361,7 +363,8 @@ public final class Meter {
     if (config.ShowTopNLongest > 0) {
       log.log(Level.FINEST, config.OutputTag, DELIMITER);
 
-      for (int i = 1, len = Math.min(pq.size(), config.ShowTopNLongest); i <= len; i++) {
+      final int len = Math.min(pq.size(), config.ShowTopNLongest);
+      for (int i = 1; i <= len; i++) {
         final Step step = pq.poll();
 
         if (null != step && !step.IsSkipped) {
@@ -381,7 +384,8 @@ public final class Meter {
    * @param timing array of long values.
    * @return Collection with converted values.
    */
-  public static List<Object> toParams(long[] timing) {
+  @SuppressWarnings({"PMD.UseArraysAsList", "PMD.LocalVariableCouldBeFinal"})
+  public static List<Object> toParams(final long[] timing) {
     final List<Object> params = new ArrayList<Object>(Math.max(timing.length, PREALLOCATE));
 
     for (int j = 0, len = timing.length; j < len; j++) {
@@ -422,7 +426,7 @@ public final class Meter {
   public void pop() {
     synchronized (mMeasures) {
       mMeasures.remove(mCurrent.Id);
-      mCurrent = (mMeasures.size() == 0) ? null : mMeasures.get(mMeasures.size() - 1);
+      mCurrent = (mMeasures.isEmpty()) ? null : mMeasures.get(mMeasures.size() - 1);
     }
   }
 
@@ -489,6 +493,7 @@ public final class Meter {
    * Please do not use first 32 bits for any state flags.
    * Note: all fields declared in interface by default become "public final static".
    */
+  @SuppressWarnings("PMD.AvoidConstantsInterface")
   private interface Bits {
     /** Time stamp included into statistics. */
     long INCLUDE = 0x000100000000L;
@@ -511,6 +516,7 @@ public final class Meter {
   }
 
   /** Constants of time units calculated in Nanos. */
+  @SuppressWarnings("PMD.AvoidConstantsInterface")
   public interface Nanos {
     /** One millisecond in nanos. */
     long ONE_MILLIS = 1L /*millis*/ * 1000L /*micros*/ * 1000L /*nanos*/;
@@ -536,20 +542,6 @@ public final class Meter {
 
   /** Statistics output and Tracking behavior configuration. */
   public final static class Config {
-    /** Default path used for trace DUMPs. */
-    public static final String getDefaultTraceFilePath() {
-      // NOTE: for making Meter compatible with JVM tests - I expect exception from
-      // runner side: "java.lang.RuntimeException: Method setUp in android.test.AndroidTestCase
-      // not mocked. See https://sites.google.com/a/android.com/tools/tech-docs/unit-testing-support
-      // for details."
-
-      try {
-        return Environment.getExternalStorageDirectory().getPath() + "/";
-      } catch (final RuntimeException ignored) {
-        return "/";
-      }
-    }
-
     /** Output tag for logs used by meter class. */
     public String OutputTag = "meter";
     /**
@@ -580,6 +572,20 @@ public final class Meter {
     public int ShowTopNLongest = 5;
     /** True - use {@link System#nanoTime()}, otherwise use {@link SystemClock#elapsedRealtimeNanos()}. */
     public boolean UseSystemNanos = true;
+
+    /** Default path used for trace DUMPs. */
+    public static String getDefaultTraceFilePath() {
+      // NOTE: for making Meter compatible with JVM tests - I expect exception from
+      // runner side: "java.lang.RuntimeException: Method setUp in android.test.AndroidTestCase
+      // not mocked. See https://sites.google.com/a/android.com/tools/tech-docs/unit-testing-support
+      // for details."
+
+      try {
+        return Environment.getExternalStorageDirectory().getPath() + "/";
+      } catch (final RuntimeException ignored) {
+        return "/";
+      }
+    }
   }
 
   /** Calibration results holder. */
@@ -624,7 +630,7 @@ public final class Meter {
     @Override
     public String toString() {
       return String.format(Locale.US,
-          "Calibrate [St/Be/Lg/Sk/Lo/Re/Un/En/Po]: %.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f ms",
+          "Calibrate [St/Be/Lg/Sk/Lo/Re/Un/En/Po]: %.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f/%.3f ms",
           toMillis(Start), toMillis(Beat), toMillis(Log), toMillis(Skip),
           toMillis(Loop), toMillis(Recap), toMillis(UnLoop), toMillis(End), toMillis(Pop));
     }
@@ -732,10 +738,8 @@ public final class Meter {
       final Integer loop;
       final Loop loopInfo;
 
-      if (null != (loop = LoopsQueue.peek())) {
-        if (null != (loopInfo = Loops.get(loop))) {
-          loopInfo.add(time, flags);
-        }
+      if (null != (loop = LoopsQueue.peek()) && null != (loopInfo = Loops.get(loop))) {
+        loopInfo.add(time, flags);
       }
 
       return index;
@@ -757,7 +761,7 @@ public final class Meter {
      * @return the string
      */
     public String format() {
-      final StringBuilder format = new StringBuilder(PREALLOCATE * 4);
+      final StringBuilder format = new StringBuilder(1024);
 
       if (Parent.getConfig().ShowTableStart) {
         format.append("| ");
@@ -853,7 +857,7 @@ public final class Meter {
      * @return index of iteration.
      */
     public int add(final long time, final long flags) {
-      int index = Position;
+      final int index = Position;
       Iterations[index] = time;
       Flags[index] = flags;
 
@@ -886,7 +890,7 @@ public final class Meter {
       long avg, total = 0, iteration, stepN = loopStart, stepM;
 
       for (int i = 0; i < Counter; i++) {
-        int index = toArrayIndex(i, Position, Counter, Iterations.length);
+        final int index = toArrayIndex(i, Position, Counter, Iterations.length);
 
         stepM = Iterations[index];
         iteration = stepM - stepN;
@@ -902,14 +906,15 @@ public final class Meter {
       avg = (total - min - max) / Math.max(1, Counter - 2);
 
       // normalize output for empty Loops. make number good looking for output
-      if (Counter == 0) {
+      if (0 == Counter) {
         avg = min = max = loopTotal = 0;
       }
 
-      // "avg: %.3fms min: %.3fms max: %.3fms total:%.3fms calls:%d / "
-      // "avg/min/max/total: %.3f/%.3f/%.3f/%.3f ms - calls:%d / "
+      // "avg: %.3fms min: %.3fms max: %.3fms sum:%.3fms calls:%d / "
+      // "avg/min/max/sum: %.3f/%.3f/%.3f/%.3f ms - calls:%d / "
+      // "~/-/+/∑: %.3f/%.3f/%.3f/%.3f ms - N:%d"
 
-      return String.format(Locale.US, "avg/min/max/total: %.3f/%.3f/%.3f/%.3f ms - calls:%d / ",
+      return String.format(Locale.US, "avg/min/max/sum: %.3f/%.3f/%.3f/%.3f ms - calls:%d / ",
           toMillis(avg), toMillis(min), toMillis(max), toMillis(loopTotal), TotalCaptured);
     }
 

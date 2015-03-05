@@ -5,9 +5,19 @@ import android.os.SystemClock;
 import com.artfulbits.benchmark.junit.Sampling;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.logging.Level;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -19,18 +29,92 @@ import static org.junit.Assert.assertTrue;
  * @see <a href="http://www.vogella.com/tutorials/JUnit/article.html">Unit Testing with JUnit - Tutorial</a>
  */
 public class MeterTests {
+  /* [ STATIC MEMBERS ] ============================================================================================ */
 
-  private static Meter sAnother = null;
+  private static Comparator<Object> sObjectComparator;
+  private static Comparator<Method> sMethodComparator;
+
+  /* [ INJECTIONS ] ================================================================================================ */
+  @Rule
+  public TestName mTestName = new TestName();
+
+  /* [ MEMBERS ] =================================================================================================== */
+
+  private Meter.Output mOutput;
+  private transient Meter mAnotherInstance = null;
+
+	/* [ IMPLEMENTATION & HELPERS ] ================================================================================== */
+
+  //region Setup and TearDown
+  @BeforeClass
+  public static void setUpClass() {
+    // sort by name
+    sMethodComparator = new Comparator<Method>() {
+      @Override
+      public int compare(final Method lhs, final Method rhs) {
+        return lhs.getName().compareTo(rhs.getName());
+      }
+    };
+
+    // find by name
+    sObjectComparator = new Comparator<Object>() {
+      @Override
+      public int compare(final Object lhs, final Object rhs) {
+        if (lhs instanceof Method) {
+          if (rhs instanceof Method) {
+            return ((Method) lhs).getName().compareTo(((Method) rhs).getName());
+          }
+
+          return ((Method) lhs).getName().compareTo((String) rhs);
+        }
+
+        if (rhs instanceof Method) {
+          return ((String) lhs).compareTo(((Method) rhs).getName());
+        }
+
+        return ((String) lhs).compareTo((String) rhs);
+      }
+    };
+  }
 
   @Before
   public void setUp() {
-    sAnother = null;
+    mAnotherInstance = null;
+
+    mOutput = new Meter.Output() {
+      private StringBuilder mLog = new StringBuilder(64 * 1024).append("\r\n");
+
+      @Override
+      public void log(final Level level, final String tag, final String msg) {
+        mLog.append(level.toString().charAt(0)).append(" : ")
+            .append(tag).append(" : ")
+            .append(msg).append("\r\n");
+      }
+
+      @Override
+      public String toString() {
+        return mLog.toString();
+      }
+    };
+
+    mOutput.log(Level.INFO, "→", mTestName.getMethodName());
   }
 
   @After
   public void tearDown() {
-    sAnother = null;
+    mAnotherInstance = null;
+
+    mOutput.log(Level.INFO, "←", mTestName.getMethodName());
+    System.out.append(mOutput.toString());
   }
+
+  @AfterClass
+  public static void tearDownClass() {
+    // do nothing for now
+  }
+  //endregion
+
+  /* [ TESTS ] ===================================================================================================== */
 
   @Test
   public void test_00_Instance() {
@@ -41,7 +125,7 @@ public class MeterTests {
 
   @Test
   public void test_01_Instance_Threads() {
-    assertNull("Reference should be null", sAnother);
+    assertNull("Reference should be null", mAnotherInstance);
 
     final Meter meter = Meter.getInstance();
     assertNotNull("Instance for current thread expected", meter);
@@ -49,7 +133,7 @@ public class MeterTests {
     final Thread t = new Thread(new Runnable() {
       @Override
       public void run() {
-        sAnother = Meter.getInstance();
+        mAnotherInstance = Meter.getInstance();
 
         // notify that instance extracted
         synchronized (meter) {
@@ -67,8 +151,8 @@ public class MeterTests {
     } catch (final Throwable ignored) {
     }
 
-    assertNotNull("Expected another instance of the Meter class", sAnother);
-    assertNotEquals("Expected different instances for each thread.", meter, sAnother);
+    assertNotNull("Expected another instance of the Meter class", mAnotherInstance);
+    assertNotEquals("Expected different instances for each thread.", meter, mAnotherInstance);
   }
 
   @Test
@@ -87,12 +171,14 @@ public class MeterTests {
     assertNotEquals(values, 0L, results.Start);
     assertNotEquals(values, 0L, results.Beat);
     assertNotEquals(values, 0L, results.Log);
-    assertNotEquals(values, 0L, results.Skip);
     assertNotEquals(values, 0L, results.Loop);
-    assertNotEquals(values, 0L, results.Recap);
     assertNotEquals(values, 0L, results.UnLoop);
-    assertNotEquals(values, 0L, results.End);
     assertNotEquals(values, 0L, results.Pop);
+
+    // flaky! skip method may take no time at all
+    // assertNotEquals(values, 0L, results.Skip);
+    // assertNotEquals(values, 0L, results.End);
+    // assertNotEquals(values, 0L, results.Recap);
   }
 
   @Test
@@ -113,7 +199,6 @@ public class MeterTests {
 
     meter.loop(Sampling.ITERATIONS_L, "");
     for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
-
       meter.recap();
     }
     meter.unloop("");
@@ -122,7 +207,7 @@ public class MeterTests {
   }
 
   @Test
-  public void test_04_NestedRun() {
+  public void test_04_NestedRun() throws NoSuchMethodException {
     final Meter meter = Meter.getInstance();
     assertNotNull("Expected instance.", meter);
 
@@ -140,7 +225,7 @@ public class MeterTests {
     final int id = meter.start("→→ Sub measurements");
     meter.loop(Sampling.ITERATIONS_L, "");
     for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
-
+      final Method m = DummyPojo.class.getMethod("getName");
       meter.recap();
     }
     meter.unloop();
@@ -154,5 +239,131 @@ public class MeterTests {
     meter.finish("← Smoke test");
 
     assertTrue("Nested measurement should have ID bigger zero", 0 < id);
+  }
+
+  @Test
+  public void test_05_CustomOutput() throws Exception {
+    final Meter meter = Meter.getInstance();
+
+    // register custom output provider
+    meter.setOutput(mOutput);
+
+    assertNotNull("Expected instance of the output provider", meter.getOutput());
+    assertEquals("Expected same instance", mOutput, meter.getOutput());
+
+    // try custom logger
+    meter.start("→ Custom output");
+    SystemClock.sleep(100);
+    meter.finish("← Custom output");
+
+    assertTrue("Expected not empty logs", mOutput.toString().length() > 0);
+  }
+
+  @Test
+  public void test_05_ReflectionSpeed() throws Exception {
+    final Meter meter = Meter.getInstance();
+
+    // register custom output provider
+    meter.setOutput(mOutput);
+
+    meter.start("→ Reflection");
+
+    final Method[] methods = DummyPojo.class.getMethods();
+    meter.beat("extract all methods");
+
+    Arrays.sort(methods, sMethodComparator);
+    meter.beat("optimize search");
+
+    meter.loop("");
+    for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
+      final Method methodGet = DummyPojo.class.getMethod("getMemo");
+
+      if (null != methodGet) {
+        meter.recap();
+      }
+    }
+    meter.unloop("single GET Method by name");
+
+    meter.loop("");
+    for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
+      final Method methodSet = DummyPojo.class.getMethod("setMemo", String.class);
+
+      if (null != methodSet) {
+        meter.recap();
+      }
+    }
+    meter.unloop("single SET Method by name");
+
+    meter.loop("");
+    for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
+      final Method methodGet = DummyPojo.class.getMethod("getMemo");
+      final Method methodSet = DummyPojo.class.getMethod("setMemo", String.class);
+
+      if (null != methodGet && null != methodSet) {
+        meter.recap();
+      }
+    }
+    meter.unloop("single GET/SET Method by name");
+
+    meter.loop("");
+    for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
+      final int indexGet = Arrays.binarySearch(methods, "getMemo", sObjectComparator);
+      final int indexSet = Arrays.binarySearch(methods, "setMemo", sObjectComparator);
+      final Method methodGet = methods[indexGet];
+      final Method methodSet = methods[indexSet];
+
+      if (null != methodGet && null != methodSet) {
+        meter.recap();
+      }
+    }
+    meter.unloop("methods binary search");
+
+    meter.finish("← Reflection");
+
+    // always fail
+    //assertTrue(mOutput.toString(), false);
+  }
+
+  /* [ NESTED DECLARATIONS ] ======================================================================================= */
+
+  public class DummyPojo {
+    private String mId;
+    private String mName;
+    private String mExtra;
+
+    private String mMemo;
+
+    public String getId() {
+      return mId;
+    }
+
+    /* package */ void setId(final String id) {
+      mId = id;
+    }
+
+    public String getName() {
+      return mName;
+    }
+
+    private void setName(final String name) {
+      mName = name;
+    }
+
+    public String getExtra() {
+      return mExtra;
+    }
+
+    protected void setExtra(final String extra) {
+      mExtra = extra;
+    }
+
+    public String getMemo() {
+      return mMemo;
+    }
+
+    public void setMemo(final String memo) {
+      mMemo = memo;
+    }
+
   }
 }

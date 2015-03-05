@@ -17,16 +17,16 @@ import static org.junit.Assert.assertNull;
  */
 public class MeterTests {
 
-  private static Meter sAnother = null;
+  private transient Meter mAnotherThreadInstance = null;
 
   @Before
   public void setUp() {
-    sAnother = null;
+    mAnotherThreadInstance = null;
   }
 
   @After
   public void tearDown() {
-    sAnother = null;
+    mAnotherThreadInstance = null;
   }
 
   @Test
@@ -38,7 +38,7 @@ public class MeterTests {
 
   @Test
   public void test_01_Instance_Threads() {
-    assertNull("Reference should be null", sAnother);
+    assertNull("Reference should be null", mAnotherThreadInstance);
 
     final Meter meter = Meter.getInstance();
     assertNotNull("Instance for current thread expected", meter);
@@ -46,7 +46,7 @@ public class MeterTests {
     final Thread t = new Thread(new Runnable() {
       @Override
       public void run() {
-        sAnother = Meter.getInstance();
+        mAnotherThreadInstance = Meter.getInstance();
 
         // notify that instance extracted
         synchronized (meter) {
@@ -64,7 +64,7 @@ public class MeterTests {
     } catch (final Throwable ignored) {
     }
 
-    assertNotNull("Expected another instance of the Meter class", sAnother);
-    assertNotEquals("Expected different instances for each thread.", meter, sAnother);
+    assertNotNull("Expected another instance of the Meter class", mAnotherThreadInstance);
+    assertNotEquals("Expected different instances for each thread.", meter, mAnotherThreadInstance);
   }
 }

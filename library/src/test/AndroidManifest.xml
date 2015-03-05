@@ -1,5 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.artfulbits.benchmark.test">
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.artfulbits.benchmark.test"
+          tools:ignore="GradleOverrides">
 
     <!--suppress AndroidDomInspection -->
     <instrumentation

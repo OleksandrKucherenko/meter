@@ -3,11 +3,12 @@
           xmlns:tools="http://schemas.android.com/tools"
           package="com.artfulbits.benchmark.sample.tests"
           android:versionCode="1"
-          android:versionName="1.0">
+          android:versionName="1.0"
+          tools:ignore="GradleOverrides">
 
     <uses-sdk
         android:minSdkVersion="10"
-        android:targetSdkVersion="19"/>
+        android:targetSdkVersion="21"/>
 
     <!-- Define instrumentation -->
     <!--suppress AndroidDomInspection -->

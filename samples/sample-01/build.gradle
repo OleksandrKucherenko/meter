@@ -1,7 +1,4 @@
 // Application: Sample-01
-
-import org.apache.tools.ant.taskdefs.condition.Os
-
 buildscript {
     repositories {
         jcenter()
@@ -22,6 +19,7 @@ buildscript {
 
 apply plugin: 'com.android.application'
 apply plugin: 'com.github.kt3k.coveralls'
+apply from: "${rootProject.rootDir}/gradle/config/quality.gradle"
 
 /* DEFINE REPOSITORY WITH LATEST ROBOLECTRIC VERSION */
 repositories {
@@ -417,64 +415,6 @@ coveralls.jacocoReportPath = 'build/outputs/reports/coverage/debug/report.xml'
 /* ---------------------------------------------------------------------------------------------  */
 /* CUSTOM TASKS                                                                                   */
 /* ---------------------------------------------------------------------------------------------  */
-
-task openResults(dependsOn: ["openLintResults"]) {
-    description = 'open Tools results in current web browser'
-    group = 'Code Quality'
-
-    logger.lifecycle(":openResults");
-}
-
-if (useRobolectric) {
-    // Task opens robolectric report file in default web-browser
-    task openTestResults(type: Exec, dependsOn: ["test"]) {
-        description = 'open Robolectric results in current web browser'
-        group = 'Code Quality'
-
-        logger.lifecycle(":openTestResults")
-
-        // done: force open of HTML file
-        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-            // path is relative to current project path:
-            //      {project}\\samples\\sample-01
-            def path = """.\\build\\reports\\tests\\index.html"""
-            commandLine "cmd.exe", '/C', path
-
-        } else {
-            // this build server, or Mac OS, or Linux - ignore this call
-        }
-    }
-
-    openResults.dependsOn openTestResults
-}
-
-// Task opens LINT utility report file in default web browser
-task openLintResults(type: Exec, dependsOn: ["lint"]) {
-    description = 'open Android Lint results in current web browser'
-    group = 'Code Quality'
-
-    logger.lifecycle(":openLintResults")
-
-    // done: force open of HTML file
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        // path is relative to current project path:
-        //      {project}\\samples\\sample-01
-        def path = """.\\build\\lint-results.html"""
-        commandLine "cmd.exe", '/C', path
-
-    } else {
-        // this build server, or Mac OS, or Linux - ignore this call
-    }
-}
-
-//if (!useRobolectric) {
-//    task test() {
-//        group = 'Testing/QA'
-//        description = 'Testing Stub task, for preventing failure of build script.'
-//
-//        rootProject.logger.lifecycle("--> Robolectric Unit Testings is not enabled! <--")
-//    }
-//}
 
 if (useMultiDex) {
     afterEvaluate {

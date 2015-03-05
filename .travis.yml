@@ -24,7 +24,6 @@ env:
     #- secure: "NO1orR9cZgKB6qLMdfwj2+Mh5has9FFFwIxkNadpK6gjhCR/GOCrQLPqEi5BvX4o5fDV8M01rW0dOoRlgOne4pFIXfuQY6rdVaUDYtTQajx1bEvnTQntY15Fj3Bmi8GDVlgIMkuSJmK62brT8oOderOyOYV5QHgVxOtcznIzAhI="
     # say gradle to output without color codes, the same as add switch --no-color
     - TERM=dumb
-    - VERBOSITY='--info'
   matrix:
     # run 'android list targets & pause' to see list of possible targets for matrix
     - ANDROID_TARGET=android-21  ANDROID_ABI=armeabi-v7a  AVD_NAME='test-api21-arm'
@@ -90,27 +89,28 @@ branches:
     - master
 
 before_script:
-  # Create and start emulator
-  - echo "${ANDROID_TARGET}", "${ANDROID_ABI}", "${AVD_NAME}"
-  - echo no | android create avd --force -n "$AVD_NAME" -t "$ANDROID_TARGET" --abi "$ANDROID_ABI"
-  # before executing the emulator run gradle with "warmup" task in background mode
-  - ./gradlew dependencyUpdates >/dev/null 2>/dev/null &
-  - emulator -avd $AVD_NAME -no-skin -no-audio -no-window >/dev/null 2>/dev/null &
-  # now we will wait for emulator
-  - ./wait-for-avd
-  - adb shell input keyevent 26 &
-  - adb shell input keyevent 82 &
+  ############# before executing the emulator run gradle with "warmup" task in background mode
+  #- ./gradlew dependencyUpdates >/dev/null 2>/dev/null &
+  ############# Create and start emulator
+  #- echo "${ANDROID_TARGET}", "${ANDROID_ABI}", "${AVD_NAME}"
+  #- echo no | android create avd --force -n "$AVD_NAME" -t "$ANDROID_TARGET" --abi "$ANDROID_ABI"
+  #- emulator -avd $AVD_NAME -no-skin -no-audio -no-window >/dev/null 2>/dev/null &
+  ############# now we will wait for emulator
+  #- ./wait-for-avd
+  #- adb shell input keyevent 26 &
+  #- adb shell input keyevent 82 &
 
 script:
   # lets compile the project during the emulator startup
   #- ./gradlew assembleDebug assembleDebugTest --info -PdisablePreDex
   # second run will be fast!
   #- travis_retry ./gradlew build connectedCheck --info
-  - ./gradlew build connectedCheck $VERBOSITY
+  #- ./gradlew build connectedCheck --info
+  - ./gradlew test --info
 
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
-  - ./gradlew :library:coveralls $VERBOSITY
+  - ./gradlew :library:coveralls --info
 
 notifications:
   email: false
