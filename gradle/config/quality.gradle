@@ -188,7 +188,7 @@ if (ENABLE_FINDBUGS) {
         classpath = files()
     }
 
-    task findbugsHtmlReport(dependsOn: ['findbugs']) {
+    task findbugsHtmlReport(dependsOn: ['findbugs', 'findbugsResults']) {
         description = 'Findbugs HTML report generation'
         group = 'Code Quality'
 
