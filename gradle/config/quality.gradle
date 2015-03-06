@@ -40,6 +40,7 @@ if (ENABLE_QUALITY) {
             commandLine "cmd.exe", '/C', path
         } else if (Os.isFamily(Os.FAMILY_UNIX)) {
             // build on Linux
+            path = """${project.buildDir}/outputs/lint-results.html"""
             commandLine "${rootProject.rootDir}/gradle/open-test-results.sh", path
         } else if (Os.isFamily(Os.FAMILY_MAC)) {
             // Mac OS
@@ -77,6 +78,7 @@ if (ENABLE_QUALITY) {
                 commandLine "cmd.exe", '/C', path
             } else if (Os.isFamily(Os.FAMILY_UNIX)) {
                 // build on Linux
+                path = """${project.buildDir}/reports/tests/debug/index.html"""
                 commandLine "${rootProject.rootDir}/gradle/open-test-results.sh", path
             } else if (Os.isFamily(Os.FAMILY_MAC)) {
                 // Mac OS
@@ -144,6 +146,7 @@ if (ENABLE_CHECKSTYLE) {
             commandLine "cmd.exe", '/C', path
         } else if (Os.isFamily(Os.FAMILY_UNIX)) {
             // build on Linux
+            path = """${project.buildDir}/reports/checkstyle/checkstyle-results.html"""
             commandLine "${rootProject.rootDir}/gradle/open-test-results.sh", path
         } else if (Os.isFamily(Os.FAMILY_MAC)) {
             // Mac OS
@@ -221,6 +224,7 @@ if (ENABLE_FINDBUGS) {
             commandLine "cmd.exe", '/C', path
         } else if (Os.isFamily(Os.FAMILY_UNIX)) {
             // build on Linux
+            path = """${project.buildDir}/reports/findbugs/findbugs-results.html"""
             commandLine "${rootProject.rootDir}/gradle/open-test-results.sh", path
         } else if (Os.isFamily(Os.FAMILY_MAC)) {
             // Mac OS
@@ -308,6 +312,7 @@ if (ENABLE_PMD) {
             commandLine "cmd.exe", '/C', path
         } else if (Os.isFamily(Os.FAMILY_UNIX)) {
             // build on Linux
+            path = """${project.buildDir}/reports/pmd/pmd-results.html"""
             commandLine "${rootProject.rootDir}/gradle/open-test-results.sh", path
         } else if (Os.isFamily(Os.FAMILY_MAC)) {
             // Mac OS

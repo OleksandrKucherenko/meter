@@ -167,8 +167,8 @@ afterEvaluate {
 
 /* Create a copy of original mockable Jar */
 task copyMockableAndroidJar(type: Copy) {
-    from "${project.buildDir}\\intermediates\\mockable-android-${androidTargetSdkVersion}.jar"
-    into "${project.buildDir}\\intermediates\\"
+    from "${project.buildDir}/intermediates/mockable-android-${androidTargetSdkVersion}.jar"
+    into "${project.buildDir}/intermediates/"
 
     rename { String fileName ->
         fileName.replace("mockable-android-${androidTargetSdkVersion}.jar",

@@ -24,6 +24,8 @@ type gnome-open >/dev/null 2>&1 || {
 
 URL=$1
 echo "Found executor: $executor"
-exec "$executor" "$URL"
+
+# run in background
+exec "$executor" "$URL" &
 
 
