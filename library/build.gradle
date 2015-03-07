@@ -198,7 +198,8 @@ task patchMockableAndroidJar(type: Zip, dependsOn: copyMockableAndroidJar) {
 /* [ COVERALLS ] ==================================================================================================== */
 
 apply plugin: 'com.github.kt3k.coveralls'
-coveralls.jacocoReportPath = "${project.buildDir}/outputs/reports/coverage/debug/report.xml"
+coveralls.jacocoReportPath = "${project.buildDir}/outputs/reports/jacoco/jacoco.xml"
+tasks.coveralls.dependsOn 'jacocoResults'
 
 /* [ ARTIFACTS ] ==================================================================================================== */
 
