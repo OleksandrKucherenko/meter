@@ -4,7 +4,7 @@ buildscript {
         jcenter()
 //        mavenLocal()
 //        mavenCentral()
-        /* ATTACH CUSTOME BUILDS OF GRADLE PLUGINS FROM '~/gradle/prlugins' folder */
+        /* ATTACH CUSTOM BUILDS OF GRADLE PLUGINS FROM '~/gradle/plugins' folder */
 //        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
     }
     dependencies {
@@ -167,6 +167,9 @@ afterEvaluate {
 
 /* Create a copy of original mockable Jar */
 task copyMockableAndroidJar(type: Copy) {
+    description = 'Create backup copy of mockable-android-${api}.jar file'
+    group = 'Unit Testing'
+
     from "${project.buildDir}/intermediates/mockable-android-${androidTargetSdkVersion}.jar"
     into "${project.buildDir}/intermediates/"
 
@@ -179,7 +182,7 @@ task copyMockableAndroidJar(type: Copy) {
 /* Exclude classes that we want to replace by own implementation  */
 task patchMockableAndroidJar(type: Zip, dependsOn: copyMockableAndroidJar) {
     description = 'patch mockable-android-${api}.jar by own classes'
-    group = 'Code Quality'
+    group = 'Unit Testing'
 
     // set archive name and destination
     destinationDir = file("${project.buildDir}/intermediates")

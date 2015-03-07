@@ -13,9 +13,9 @@ buildscript {
     }
 }
 
-task openCheckResults(dependsOn: ['check']) {
-    description = 'Open all Quality tools reports in Web browser'
-    group = 'Code Quality'
+task checkOpenResults(dependsOn: ['check']) {
+    description = 'Open reports of ALL attached Quality Tools in Web browser'
+    group = 'Reporting'
 
     // do nothing, it used for dependency graph building only
 }
@@ -25,7 +25,7 @@ if (ENABLE_QUALITY) {
 
     task lintOpenResults(type: Exec, dependsOn: ['lint']) {
         description = 'open Android Lint results in current web browser'
-        group = 'Code Quality'
+        group = 'Reporting'
 
         // path is relative to current project path: {project}\\samples\\sample-01
         // file:/C:/Android/_projects_/meter/samples/sample-01/build/outputs/lint-results.html
@@ -48,7 +48,7 @@ if (ENABLE_QUALITY) {
     }
 
     // dependsOn, mustRunAfter, shouldRunAfter, doFirst, doLast, finalizedBy
-    openCheckResults.dependsOn 'lintOpenResults'
+    checkOpenResults.dependsOn 'lintOpenResults'
 
     /* [ UNIT Test Results ] ======================================================================================== */
     if (useTesting) {
@@ -63,7 +63,7 @@ if (ENABLE_QUALITY) {
         task testOpenResults(type: Exec, dependsOn: ['test']) {
             // Task opens report file in default web-browser
             description = 'open Unit Tests results in current web browser'
-            group = 'Code Quality'
+            group = 'Reporting'
 
             // path is relative to current project path: {project}\\samples\\sample-01
             // file:///C:/Android/_projects_/meter/library/build/reports/tests/index.html
@@ -85,7 +85,66 @@ if (ENABLE_QUALITY) {
             }
         }
 
-        openCheckResults.dependsOn 'testOpenResults'
+        checkOpenResults.dependsOn 'testOpenResults'
+
+        if (useJacoco) {
+            // Helpers:
+            //  http://forums.gradle.org/gradle/topics/gradle_1_6_jacoco_in_multi_module_build
+            //  http://goo.gl/1ZrSl0 --> JacocoPlugin.groovy
+            //  http://goo.gl/0pkjse --> JacocoReportTask.groovy
+
+            task jacocoResults(type: JacocoReport, dependsOn: ['test']) {
+                description = "Generates Jacoco coverage reports: XML and HTML"
+                group = "Reporting"
+
+                // use hidden configuration, for details look into JacocoPlugin.groovy
+                jacocoClasspath = project.configurations['androidJacocoAnt']
+
+                classDirectories = files(fileTree(dir: 'build/intermediates/classes/debug', excludes: [
+                        '**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*']))
+
+                sourceDirectories = files(['src/main/java'])
+                executionData = fileTree(dir: rootProject.rootDir, includes: ['*.exec', '*.ec'])
+
+                reports {
+                    xml {
+                        enabled = true
+                        destination "${project.buildDir}/reports/jacoco/jacoco.xml"
+                    }
+                    csv.enabled false
+                    html {
+                        enabled true
+                        destination "${project.buildDir}/reports/jacoco"
+                    }
+                }
+            }
+
+            task jacocoOpenResults(type: Exec, dependsOn: ['jacocoResults']) {
+                // Task opens report file in default web-browser
+                description = 'open Code Coverage for Unit Tests in web browser'
+                group = 'Reporting'
+
+                def path = ''
+
+                ignoreExitValue true // task is not critical, ignore it failure
+
+                // done: force open of HTML file
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    path = """${project.buildDir}\\reports\\jacoco\\index.html"""
+                    commandLine "cmd.exe", '/C', path
+                } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+                    // build on Linux
+                    path = """${project.buildDir}/reports/jacoco/index.html"""
+                    commandLine "${rootProject.rootDir}/gradle/open-test-results.sh", path
+                } else if (Os.isFamily(Os.FAMILY_MAC)) {
+                    // Mac OS
+                }
+
+                rootProject.logger.lifecycle('  report: ' + path)
+            }
+
+            checkOpenResults.dependsOn 'jacocoOpenResults'
+        }
     }
 }
 
@@ -118,7 +177,7 @@ if (ENABLE_CHECKSTYLE) {
 
     task checkstyleHtmlReport(dependsOn: ['checkstyle']) {
         description = 'Checkstyle HTML report generation'
-        group = 'Code Quality'
+        group = 'Reporting'
 
         if (file("${project.buildDir}/reports/checkstyle/findbugs.xml").exists()) {
             ant.xslt(in: "${project.buildDir}/reports/checkstyle/checkstyle.xml",
@@ -130,7 +189,7 @@ if (ENABLE_CHECKSTYLE) {
 
     task checkstyleOpenResults(type: Exec, dependsOn: ['checkstyleHtmlReport']) {
         description = 'open Checkstyle results in current web browser'
-        group = 'Code Quality'
+        group = 'Reporting'
 
         // path is relative to current project path: {project}\\samples\\sample-01
         // file:/C:/Android/_projects_/meter/samples/sample-01/build/outputs/lint-results.html
@@ -154,7 +213,7 @@ if (ENABLE_CHECKSTYLE) {
     }
 
     check.dependsOn 'checkstyle'
-    openCheckResults.dependsOn 'checkstyleHtmlReport'
+    checkOpenResults.dependsOn 'checkstyleHtmlReport'
 }
 
 if (ENABLE_FINDBUGS) {
@@ -193,7 +252,7 @@ if (ENABLE_FINDBUGS) {
 
     task findbugsHtmlReport(dependsOn: ['findbugs', 'findbugsResults']) {
         description = 'Findbugs HTML report generation'
-        group = 'Code Quality'
+        group = 'Reporting'
 
 //        inputs.dir("${project.buildDir}/reports/findbugs")
 //        outputs.dir("${project.buildDir}/reports/findbugs")
@@ -208,7 +267,7 @@ if (ENABLE_FINDBUGS) {
 
     task findbugsOpenResults(type: Exec, dependsOn: ['findbugsHtmlReport']) {
         description = 'open Findbugs results in current web browser'
-        group = 'Code Quality'
+        group = 'Reporting'
 
         // path is relative to current project path: {project}\\samples\\sample-01
         // file:/C:/Android/_projects_/meter/samples/sample-01/build/outputs/lint-results.html
@@ -232,7 +291,7 @@ if (ENABLE_FINDBUGS) {
     }
 
     check.dependsOn 'findbugs'
-    openCheckResults.dependsOn 'findbugsOpenResults'
+    checkOpenResults.dependsOn 'findbugsOpenResults'
 }
 
 if (ENABLE_PMD) {
@@ -240,6 +299,9 @@ if (ENABLE_PMD) {
     check.dependsOn 'pmdResults'
 
     pmd {
+        description = 'execute PMD tool on project source code'
+        group = 'Code Quality'
+
         // specify new version, otherwise will be used old v4.3
         toolVersion = "5.1.0"
         targetJdk = "1.6"
@@ -269,7 +331,7 @@ if (ENABLE_PMD) {
     }
 
     tasks.pmdResults {
-        description = 'execute PMD tool on project source code'
+        description = 'generate PMD tool results report'
         group = 'Code Quality'
 
         source 'src'
@@ -296,7 +358,7 @@ if (ENABLE_PMD) {
 
     task pmdOpenResults(type: Exec, dependsOn: ['pmdResults']) {
         description = 'open PMD results in current web browser'
-        group = 'Code Quality'
+        group = 'Reporting'
 
         // path is relative to current project path: {project}\\samples\\sample-01
         // file:/C:/Android/_projects_/meter/samples/sample-01/build/outputs/lint-results.html
@@ -319,7 +381,7 @@ if (ENABLE_PMD) {
         }
     }
 
-    openCheckResults.dependsOn 'pmdOpenResults'
+    checkOpenResults.dependsOn 'pmdOpenResults'
 }
 
 if (ENABLE_CPD) {
