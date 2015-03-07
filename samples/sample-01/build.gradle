@@ -1,4 +1,5 @@
 // Application: Sample-01
+
 buildscript {
     repositories {
         jcenter()
@@ -9,7 +10,6 @@ buildscript {
     }
     dependencies {
         classpath "com.android.tools.build:gradle:${gradlePluginVersion}"
-        classpath 'com.github.jcandksolutions.gradle:android-unit-test:2.1.1'
         /* https://github.com/kt3k/coveralls-gradle-plugin */
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${CoverallsVersion}"
     }
@@ -18,7 +18,6 @@ buildscript {
 // CONFIGURATION based on: http://tools.android.com/tech-docs/new-build-system/user-guide
 
 apply plugin: 'com.android.application'
-apply plugin: 'com.github.kt3k.coveralls'
 apply from: "${rootProject.rootDir}/gradle/config/quality.gradle"
 
 /* DEFINE REPOSITORY WITH LATEST ROBOLECTRIC VERSION */
@@ -33,9 +32,7 @@ configurations.all {
 }
 
 dependencies {
-    /* ----------------------------- */
-    /* RELEASE and DEBUG COMPILATION */
-    /* ----------------------------- */
+    /* [ DEBUG/RELEASE ] ============================================================================================ */
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile "com.android.support:support-v4:${androidSupportLib}"
     compile "com.android.support:appcompat-v7:${androidSupportLib}"
@@ -46,11 +43,9 @@ dependencies {
 
     compile project(':library')
 
-    /* -------------------------- */
-    /* UNIT TESTING configuration */
-    /* -------------------------- */
+    /* [ UNIT TESTING ] ============================================================================================= */
     if (useTesting) {
-        // custom libs of the sample
+        /* Android Tests -------------------------------------------------------------------------------------------- */
         androidTestCompile fileTree(dir: 'libs', include: ['*.jar'])
 
         /* UNIT TESTS HAS DEPENDENCY ON SUPPORT LIB, SO INCLUDE IT MANUALLY FOR CONTROLLING THE VERSION OF IT */
@@ -77,6 +72,8 @@ dependencies {
 
         /* Fest Android (v1.0.8), fest util (v1.2.5), Fest core (v 2.0M10) */
         androidTestCompile 'com.squareup:fest-android:+@aar'
+
+        /* AssertJ - http://joel-costigliola.github.io/assertj/ */
 //        androidTestCompile 'com.squareup.assertj:assertj-android:+'
 //        androidTestCompile 'com.squareup.assertj:assertj-android-support-v4:+'
 
@@ -107,13 +104,15 @@ dependencies {
         } else {
         }
 
-        if (useRobolectric) {
-            // Robolectric
-            testCompile 'junit:junit:4.12'
-            testCompile 'org.hamcrest:hamcrest-core:1.1'
-            testCompile 'org.hamcrest:hamcrest-library:1.1'
-            testCompile 'org.hamcrest:hamcrest-integration:1.1'
+        /* JVM Tests ------------------------------------------------------------------------------------------------ */
+        testCompile 'org.hamcrest:hamcrest-integration:+',
+                'org.hamcrest:hamcrest-core:+',
+                'org.hamcrest:hamcrest-library:+'
+        testCompile 'org.mockito:mockito-core:+',
+                'com.google.dexmaker:dexmaker-mockito:+'
+        testCompile('junit:junit:4.12') { exclude group: 'org.hamcrest' }
 
+        if (useRobolectric) {
             /* Robolectric (v2.4) */
             testCompile('org.robolectric:robolectric:+') {
                 exclude module: 'classworlds'
@@ -199,7 +198,7 @@ android {
         release.setRoot('build-types/release')
     }
 
-    // signing keystores configuration
+    // signing keystore's configuration
     signingConfigs {
         // custom debug key, allows to test social networks
         debug {
@@ -346,6 +345,8 @@ android {
     }
 }
 
+/* [ COVERALLS ] ==================================================================================================== */
+
 if (useJacoco) {
     /* http://raptordigital.blogspot.se/2014/08/code-coverage-reports-using-robolectric.html */
     apply plugin: 'jacoco'
@@ -354,67 +355,13 @@ if (useJacoco) {
     jacoco {
         version JaCoCoVersion
     }
-
-    def sourceDirs = ['./src/main/java', '../../library/src/main/java']
-
-    task jacocoTestReport(type: JacocoReport, dependsOn: "testDebug") {
-        group = "Reporting"
-        description = "Generate Jacoco coverage reports"
-        classDirectories = fileTree(
-                dir: '../sample-01/build/intermediates/classes/debug',
-                excludes: ['**/R.class',
-                           '**/R$*.class',
-                           '**/*$ViewInjector*.*',
-                           '**/BuildConfig.*',
-                           '**/Manifest*.*']
-        )
-        additionalSourceDirs = files(sourceDirs)
-        sourceDirectories = files(sourceDirs)
-        executionData = files('../sample-01/build/jacoco/testDebug.exec')
-        reports {
-            xml.enabled = true
-            html.enabled = true
-        }
-    }
 }
 
-coveralls.jacocoReportPath = 'build/outputs/reports/coverage/debug/report.xml'
+apply plugin: 'com.github.kt3k.coveralls'
+coveralls.jacocoReportPath = "${project.buildDir}/outputs/reports/jacoco/jacoco.xml"
+tasks.coveralls.dependsOn 'jacocoResults'
 
-//if (useRobolectric) {
-//    apply plugin: 'robolectric'
-//
-//    robolectric {
-//        // configure the set of classes for JUnit tests
-//        include '**/*Test.class'
-//        exclude '**/espresso/**/*.class'
-//
-//        // configure max heap size of the test JVM
-//        maxHeapSize = "4g"
-//
-//        // configure some Java Virtual machine params for boosting tests running
-//        jvmArgs '-XX:MaxPermSize=512m'
-//
-//        // configure whether failing tests should fail the build
-//        ignoreFailures true
-//
-//        // use afterTest to listen to the test execution results
-//        afterTest { descriptor, result ->
-//            println "Executing test for {$descriptor.name} with result: ${result.resultType}"
-//        }
-//    }
-//
-//    apply plugin: 'idea'
-//
-//    idea {
-//        module {
-//            testOutputDir = file('build/test-classes/debug')
-//        }
-//    }
-//}
-
-/* ---------------------------------------------------------------------------------------------  */
-/* CUSTOM TASKS                                                                                   */
-/* ---------------------------------------------------------------------------------------------  */
+/* [ CUSTOM TASKS ] ================================================================================================= */
 
 if (useMultiDex) {
     afterEvaluate {

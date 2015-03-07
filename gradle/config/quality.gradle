@@ -96,25 +96,33 @@ if (ENABLE_QUALITY) {
             task jacocoResults(type: JacocoReport, dependsOn: ['test']) {
                 description = "Generates Jacoco coverage reports: XML and HTML"
                 group = "Reporting"
+//                outputs.upToDateWhen { false }
 
                 // use hidden configuration, for details look into JacocoPlugin.groovy
                 jacocoClasspath = project.configurations['androidJacocoAnt']
 
-                classDirectories = files(fileTree(dir: 'build/intermediates/classes/debug', excludes: [
-                        '**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*']))
+                // exclude auto-generated classes and tests
+                def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*',
+                                  'android/**/*.*']
+                def testsTree = fileTree(dir: "${project.buildDir}/intermediates/classes/test/debug", excludes: fileFilter)
+                def debugTree = fileTree(dir: "${project.buildDir}/intermediates/classes/debug", excludes: fileFilter)
+                def releaseTree = fileTree(dir: "${project.buildDir}/intermediates/classes/release", excludes: fileFilter)
+                def testsSrc = "${project.projectDir}/src/test/java"
+                def mainSrc = "${project.projectDir}/src/main/java"
 
-                sourceDirectories = files(['src/main/java'])
-                executionData = fileTree(dir: rootProject.rootDir, includes: ['*.exec', '*.ec'])
+                sourceDirectories = files([testsSrc, mainSrc])
+                classDirectories = files([testsTree, debugTree, releaseTree])
+                executionData = fileTree(dir: project.projectDir, includes: ['**/*.exec', '**/*.ec'])
 
                 reports {
                     xml {
                         enabled = true
-                        destination "${project.buildDir}/reports/jacoco/jacoco.xml"
+                        destination = "${project.buildDir}/reports/jacoco/jacoco.xml"
                     }
                     csv.enabled false
                     html {
-                        enabled true
-                        destination "${project.buildDir}/reports/jacoco"
+                        enabled = true
+                        destination = "${project.buildDir}/reports/jacoco"
                     }
                 }
             }
