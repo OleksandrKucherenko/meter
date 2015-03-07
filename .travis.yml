@@ -9,6 +9,8 @@
 
 language: android
 
+sudo: false
+
 jdk:
     #- oraclejdk7
     - oraclejdk8
@@ -34,6 +36,8 @@ env:
 
 # http://docs.travis-ci.com/user/caching/
 cache:
+  gradlew: true
+  gradle: true
   directories:
     - $HOME/.gradle
     - $HOME/.m2
@@ -44,8 +48,8 @@ addons:
       name: "OleksandrKucherenko/meter"
       description: "Micro-benchmarking tool for Android projects."
     notification_email: $EMAIL
-    build_command_prepend: "./gradlew clean $VERBOSITY --no-color"
-    build_command: "./gradlew assembleDebug $VERBOSITY --no-color"
+    build_command_prepend: "./gradlew clean --no-color"
+    build_command: "./gradlew assembleDebug --no-color"
     branch_pattern: master
 
 before_install:
@@ -106,11 +110,11 @@ script:
   # second run will be fast!
   #- travis_retry ./gradlew build connectedCheck --info
   #- ./gradlew build connectedCheck --info
-  - ./gradlew test --info
+  - ./gradlew test
 
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
-  - ./gradlew :library:coveralls --info
+  - ./gradlew :library:coveralls
 
 notifications:
   email: false
