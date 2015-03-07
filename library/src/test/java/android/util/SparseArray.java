@@ -25,6 +25,7 @@ package android.util;
  * reference:
  * http://grepcode.com/file/repo1.maven.org/maven2/com.android.tools/common/24.0.0/com/android/utils/SparseArray.java?av=f
  */
+@SuppressWarnings("PMD")
 public class SparseArray<E> {
   private static final Object DELETED = new Object();
   private boolean mGarbage = false;

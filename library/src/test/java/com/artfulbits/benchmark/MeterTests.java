@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @see <a href="http://www.vogella.com/tutorials/JUnit/article.html">Unit Testing with JUnit - Tutorial</a>
  */
+@SuppressWarnings("PMD")
 public class MeterTests {
   /* [ STATIC MEMBERS ] ============================================================================================ */
 
@@ -321,7 +322,54 @@ public class MeterTests {
     meter.finish("← Reflection");
 
     // always fail
-    //assertTrue(mOutput.toString(), false);
+    assertTrue("output should contain lines with our output tag", mOutput.toString().contains(meter.getConfig().OutputTag));
+  }
+
+  @Test
+  public void test_06_AllConfigOptions() throws Exception {
+    final String CustomTag = "test-06";
+    final Meter meter = Meter.getInstance();
+
+    // register custom output provider
+    meter.setOutput(mOutput);
+
+    // do configuration
+    meter.getConfig().OutputTag = CustomTag;
+    meter.getConfig().DoMethodsTrace = true;
+    meter.getConfig().ShowAccumulatedTime = true;
+    meter.getConfig().ShowLogMessage = true;
+    meter.getConfig().ShowStepCostPercents = true;
+    meter.getConfig().ShowStepCostTime = true;
+    meter.getConfig().ShowStepsGrid = true;
+    meter.getConfig().ShowSummary = true;
+    meter.getConfig().ShowTableStart = true;
+    meter.getConfig().UseSystemNanos = true;
+    meter.getConfig().ShowAccumulatedTime = true;
+
+    meter.start("→ Reflection");
+
+    final Method[] methods = DummyPojo.class.getMethods();
+    meter.beat("extract all methods");
+
+    Arrays.sort(methods, sMethodComparator);
+    meter.skip("optimize search");
+
+    meter.loop("");
+    for (int i = 0; i < Sampling.ITERATIONS_XXL; i++) {
+      final int indexGet = Arrays.binarySearch(methods, "getMemo", sObjectComparator);
+      final int indexSet = Arrays.binarySearch(methods, "setMemo", sObjectComparator);
+      final Method methodGet = methods[indexGet];
+      final Method methodSet = methods[indexSet];
+
+      if (null != methodGet && null != methodSet) {
+        meter.recap();
+      }
+    }
+    meter.unloop("cycled array");
+
+    meter.finish("← Reflection");
+
+    assertTrue("Output should contain our custom output tag", mOutput.toString().contains(CustomTag));
   }
 
   /* [ NESTED DECLARATIONS ] ======================================================================================= */

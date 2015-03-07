@@ -114,6 +114,9 @@ script:
 
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
+  ############# dump structure of the project
+  - ls -R
+  ############# coverage report
   - ./gradlew :library:coveralls
 
 notifications:

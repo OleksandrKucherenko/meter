@@ -1,16 +1,17 @@
 package com.artfulbits.benchmark.junit;
 
 /** Traditional Sampling constants. */
+@SuppressWarnings("PMD.AvoidConstantsInterface")
 public interface Sampling {
   /** Default: 10. Small. */
   int ITERATIONS_S = 10;
   /** Default: 100. Medium. */
   int ITERATIONS_M = ITERATIONS_S * 10;
-  /** Default: 1000. Large. */
+  /** Default: 1'000. Large. */
   int ITERATIONS_L = ITERATIONS_M * 10;
-  /** Default: 10000. Extra large. */
+  /** Default: 10'000. Extra large. */
   int ITERATIONS_XL = ITERATIONS_L * 10;
-  /** Default: 100000. Extra extra large. */
+  /** Default: 100'000. Extra extra large. */
   int ITERATIONS_XXL = ITERATIONS_XL * 10;
   /** 1 second in millis resolution. */
   long MILLIS = 1000;
