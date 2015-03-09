@@ -79,6 +79,10 @@ public final class Meter {
       mLog = new Output() {
         @Override
         public void log(final Level level, final String tag, final String msg) {
+          if (Level.OFF == level) {
+            return;
+          }
+
           if (Level.INFO == level) {
             Log.i(tag, msg);
           } else if (Level.WARNING == level) {
@@ -316,6 +320,17 @@ public final class Meter {
     pop();
   }
 
+  /**
+   * End benchmarking, print statistics, prepare class for next run.
+   *
+   * @param log log message.
+   */
+  public void finish(final String log) {
+    end(log);
+    stats();
+    pop();
+  }
+
   /** End benchmarking. */
   public void end() {
     mCurrent.add(timestamp(), Bits.END);
@@ -325,10 +340,52 @@ public final class Meter {
     }
   }
 
-  /** Print captured statistics into logcat. */
+  /**
+   * End benchmarking.
+   *
+   * @param log log message.
+   */
+  public void end(final String log) {
+    end();
+    log(log);
+  }
+
+	/* [ NESTED METERS ] =========================================================================================== */
+
+  /** Remove from measurements stack last done tracking. Method switches current Measure instance to next in stack. */
+  public void pop() {
+    synchronized (mMeasures) {
+      mMeasures.remove(mCurrent);
+      mCurrent = (mMeasures.isEmpty()) ? null : mMeasures.get(mMeasures.size() - 1);
+    }
+  }
+
+  /** Cleanup the nested measures storage and leave only current active on top. */
+  public void clear() {
+    synchronized (mMeasures) {
+      mMeasures.clear();
+
+      if (null != mCurrent) {
+        mMeasures.add(mCurrent);
+      }
+    }
+  }
+
+  /* [ REPORTS ] ================================================================================================= */
+
+  /** Print captured statistics into default output. */
   @SuppressWarnings({"PMD.AvoidInstantiatingObjectsInLoops"})
   public void stats() {
-    final Output log = getOutput();
+    stats(getOutput());
+  }
+
+  /**
+   * Print captured statistics into provided output.
+   *
+   * @param log instance of logger
+   */
+  @SuppressWarnings({"PMD.AvoidInstantiatingObjectsInLoops"})
+  public void stats(final Output log) {
     final Config config = getConfig();
     final int totalSteps = mCurrent.Position.get();
     final List<Step> steps = new ArrayList<Step>(totalSteps);
@@ -411,6 +468,34 @@ public final class Meter {
   }
 
   /**
+   * Convert range [0..counter] to position in cycled array.
+   *
+   * @param index    index to convert.
+   * @param position current cycled position in array.
+   * @param count    quantity of elements stored in array.
+   * @param length   length of the array.
+   * @return converted index;
+   */
+  public static int toArrayIndex(final int index, final int position, final int count, final int length) {
+    if (count > length) { // 4, 1, 5, 5
+      throw new IllegalArgumentException();
+    }
+
+    // array is not filled and cycling is not enabled yet
+    if ((position + count) < length) {
+      return position + index;
+    }
+
+    // item is in a left range
+    if (index >= length - position) {
+      return index - (length - position);
+    }
+
+    // item is in a right range
+    return position + index;
+  }
+
+  /**
    * Convert nanoseconds to milliseconds with high accuracy.
    *
    * @param nanos nanoseconds to convert.
@@ -418,44 +503,6 @@ public final class Meter {
    */
   public static double toMillis(final long nanos) {
     return nanos / 1000.0 /* micros in 1 milli */ / 1000.0 /* nanos in 1 micro */;
-  }
-
-	/* [FINISH] ==================================================================================================== */
-
-  /** Remove from measurements stack last done tracking. Method switches current Measure instance to next in stack. */
-  public void pop() {
-    synchronized (mMeasures) {
-      mMeasures.remove(mCurrent.Id);
-      mCurrent = (mMeasures.isEmpty()) ? null : mMeasures.get(mMeasures.size() - 1);
-    }
-  }
-
-  /**
-   * End benchmarking, print statistics, prepare class for next run.
-   *
-   * @param log log message.
-   */
-  public void finish(final String log) {
-    end(log);
-    stats();
-    pop();
-  }
-
-  /**
-   * End benchmarking.
-   *
-   * @param log log message.
-   */
-  public void end(final String log) {
-    end();
-    log(log);
-  }
-
-  /** Cleanup the class. */
-  public void clear() {
-    synchronized (mMeasures) {
-      mMeasures.clear();
-    }
   }
 
 	/* [ CONSTRUCTORS ] ============================================================================================ */
@@ -543,7 +590,7 @@ public final class Meter {
   /** Statistics output and Tracking behavior configuration. */
   public final static class Config {
     /** Output tag for logs used by meter class. */
-    public String OutputTag = "meter";
+    public String OutputTag;
     /**
      * Default DUMP trace file name. Used only when {@link Config#DoMethodsTrace} is set to <code>true</code>. Field
      * initialized by android default dump file name.
@@ -559,19 +606,24 @@ public final class Meter {
     /** <code>true</code> - show accumulated time column, otherwise <code>false</code>. */
     public boolean ShowAccumulatedTime;
     /** <code>true</code> - show cost in percents column, otherwise <code>false</code>. */
-    public boolean ShowStepCostPercents = true;
+    public boolean ShowStepCostPercents;
     /** <code>true</code> - show step cost time column, otherwise <code>false</code>. */
-    public boolean ShowStepCostTime = true;
+    public boolean ShowStepCostTime;
     /** <code>true</code> - show log message column, otherwise <code>false</code>. */
-    public boolean ShowLogMessage = true;
+    public boolean ShowLogMessage;
     /** <code>true</code> - show after tracking summary, otherwise <code>false</code>. */
-    public boolean ShowSummary = true;
+    public boolean ShowSummary;
     /** <code>true</code> - place column starter symbol "| " on each row start, otherwise <code>false</code>. */
-    public boolean ShowTableStart = true;
+    public boolean ShowTableStart;
     /** Show in statistics summary list of longest steps. Define the Number of steps to show. */
-    public int ShowTopNLongest = 5;
+    public int ShowTopNLongest;
     /** True - use {@link System#nanoTime()}, otherwise use {@link SystemClock#elapsedRealtimeNanos()}. */
-    public boolean UseSystemNanos = true;
+    public boolean UseSystemNanos;
+
+    /** Default constructor */
+    public Config() {
+      reset();
+    }
 
     /** Default path used for trace DUMPs. */
     public static String getDefaultTraceFilePath() {
@@ -585,6 +637,15 @@ public final class Meter {
       } catch (final RuntimeException ignored) {
         return "/";
       }
+    }
+
+    /** Reset configuration to default settings. */
+    public void reset() {
+      OutputTag = "meter";
+      MethodsTraceFilePath = getDefaultTraceFilePath() + "dmtrace.trace";
+      DoMethodsTrace = ShowStepsGrid = ShowAccumulatedTime = false;
+      ShowStepCostPercents = ShowStepCostTime = ShowLogMessage = ShowSummary = ShowTableStart = UseSystemNanos = true;
+      ShowTopNLongest = 5;
     }
   }
 
@@ -916,34 +977,6 @@ public final class Meter {
 
       return String.format(Locale.US, "avg/min/max/sum: %.3f/%.3f/%.3f/%.3f ms - calls:%d / ",
           toMillis(avg), toMillis(min), toMillis(max), toMillis(loopTotal), TotalCaptured);
-    }
-
-    /**
-     * Convert range [0..counter] to position in cycled array.
-     *
-     * @param index    index to convert.
-     * @param position current cycled position in array.
-     * @param count    quantity of elements stored in array.
-     * @param length   length of the array.
-     * @return converted index;
-     */
-    public static int toArrayIndex(final int index, final int position, final int count, final int length) {
-      if (count > length) {
-        throw new IllegalArgumentException();
-      }
-
-      // array is not filled and cycling is not enabled yet
-      if (count < length) {
-        return index;
-      }
-      // item is in a left range
-      else if (index > length - position) {
-        return index - (length - position);
-      }
-      // item is in a right range
-      else {
-        return position + index;
-      }
     }
   }
 

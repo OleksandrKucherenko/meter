@@ -21,11 +21,13 @@ import java.util.logging.Level;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * jUnit tests for Meter class.
@@ -34,6 +36,8 @@ import static org.junit.Assert.assertTrue;
  */
 @SuppressWarnings("PMD")
 public class MeterTests {
+  private static final String EMPTY_LOG = "";
+
   /* [ STATIC MEMBERS ] ============================================================================================ */
 
   private static Comparator<Object> sObjectComparator;
@@ -103,6 +107,9 @@ public class MeterTests {
     };
 
     mOutput.log(Level.INFO, "→", mTestName.getMethodName());
+
+    // reset to initial configuration
+    Meter.getInstance().getConfig().reset();
   }
 
   @After
@@ -117,6 +124,7 @@ public class MeterTests {
   public static void tearDownClass() {
     // do nothing for now
   }
+
   //endregion
 
   /* [ TESTS ] ===================================================================================================== */
@@ -197,22 +205,25 @@ public class MeterTests {
     final Meter meter = Meter.getInstance();
     assertNotNull("Expected instance.", meter);
 
+    assertFalse("Meter instance is marked as tracking", meter.isTracking());
+
     final Meter.Calibrate timing = meter.calibrate();
     assertNotNull("Expected instance.", timing);
 
+    assertFalse("Calibrate should not change tracking state", meter.isTracking());
     meter.start("→ Smoke test");
 
     // TODO: warm up java classes
     meter.skip("warming up");
 
-    // TODO:
+    assertTrue("Should indicate tracking state", meter.isTracking());
     meter.beat("initialization");
 
-    meter.loop(Sampling.ITERATIONS_L, "");
+    meter.loop(Sampling.ITERATIONS_L, EMPTY_LOG);
     for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
       meter.recap();
     }
-    meter.unloop("");
+    meter.unloop(EMPTY_LOG);
 
     meter.finish("← Smoke test");
   }
@@ -234,7 +245,7 @@ public class MeterTests {
     meter.beat("initialization");
 
     final int id = meter.start("→→ Sub measurements");
-    meter.loop(Sampling.ITERATIONS_L, "");
+    meter.loop(Sampling.ITERATIONS_L, EMPTY_LOG);
     for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
       final Method m = DummyPojo.class.getMethod("getName");
       meter.recap();
@@ -253,7 +264,7 @@ public class MeterTests {
   }
 
   @Test
-  public void test_05_CustomOutput() throws Exception {
+  public void test_05_CustomOutput() {
     final Meter meter = Meter.getInstance();
 
     // register custom output provider
@@ -271,7 +282,7 @@ public class MeterTests {
   }
 
   @Test
-  public void test_05_ReflectionSpeed() throws Exception {
+  public void test_05_ReflectionSpeed() throws NoSuchMethodException {
     final Meter meter = Meter.getInstance();
 
     // register custom output provider
@@ -285,7 +296,7 @@ public class MeterTests {
     Arrays.sort(methods, sMethodComparator);
     meter.beat("optimize search");
 
-    meter.loop("");
+    meter.loop(EMPTY_LOG);
     for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
       final Method methodGet = DummyPojo.class.getMethod("getMemo");
 
@@ -295,7 +306,7 @@ public class MeterTests {
     }
     meter.unloop("single GET Method by name");
 
-    meter.loop("");
+    meter.loop(EMPTY_LOG);
     for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
       final Method methodSet = DummyPojo.class.getMethod("setMemo", String.class);
 
@@ -305,7 +316,7 @@ public class MeterTests {
     }
     meter.unloop("single SET Method by name");
 
-    meter.loop("");
+    meter.loop(EMPTY_LOG);
     for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
       final Method methodGet = DummyPojo.class.getMethod("getMemo");
       final Method methodSet = DummyPojo.class.getMethod("setMemo", String.class);
@@ -316,7 +327,7 @@ public class MeterTests {
     }
     meter.unloop("single GET/SET Method by name");
 
-    meter.loop("");
+    meter.loop(EMPTY_LOG);
     for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
       final int indexGet = Arrays.binarySearch(methods, "getMemo", sObjectComparator);
       final int indexSet = Arrays.binarySearch(methods, "setMemo", sObjectComparator);
@@ -336,7 +347,7 @@ public class MeterTests {
   }
 
   @Test
-  public void test_06_AllConfigOptions() throws Exception {
+  public void test_06_AllConfigOptionsOn() {
     final String CustomTag = "test-06";
     final Meter meter = Meter.getInstance();
 
@@ -364,7 +375,7 @@ public class MeterTests {
     Arrays.sort(methods, sMethodComparator);
     meter.skip("optimize search");
 
-    meter.loop("");
+    meter.loop(EMPTY_LOG);
     for (int i = 0; i < Sampling.ITERATIONS_XXL; i++) {
       final int indexGet = Arrays.binarySearch(methods, "getMemo", sObjectComparator);
       final int indexSet = Arrays.binarySearch(methods, "setMemo", sObjectComparator);
@@ -383,9 +394,263 @@ public class MeterTests {
   }
 
   @Test
-  public void test_07_Ca() throws Exception {
+  public void test_07_AllConfigOptionsOff() {
+    final String CustomTag = "test-07";
+    final Meter meter = Meter.getInstance();
 
+    // register custom output provider
+    meter.setOutput(mOutput);
 
+    // do configuration
+    meter.getConfig().OutputTag = CustomTag;
+    meter.getConfig().DoMethodsTrace = false;
+    meter.getConfig().ShowAccumulatedTime = false;
+    meter.getConfig().ShowLogMessage = false;
+    meter.getConfig().ShowStepCostPercents = false;
+    meter.getConfig().ShowStepCostTime = false;
+    meter.getConfig().ShowStepsGrid = false;
+    meter.getConfig().ShowSummary = false;
+    meter.getConfig().ShowTableStart = false;
+    meter.getConfig().UseSystemNanos = false;
+    meter.getConfig().ShowAccumulatedTime = false;
+
+    meter.start("→ Reflection");
+
+    final Method[] methods = DummyPojo.class.getMethods();
+    meter.beat("extract all methods");
+
+    Arrays.sort(methods, sMethodComparator);
+    meter.skip("optimize search");
+
+    meter.loop(EMPTY_LOG);
+    for (int i = 0; i < Sampling.ITERATIONS_XXL; i++) {
+      final int indexGet = Arrays.binarySearch(methods, "getMemo", sObjectComparator);
+      final int indexSet = Arrays.binarySearch(methods, "setMemo", sObjectComparator);
+      final Method methodGet = methods[indexGet];
+      final Method methodSet = methods[indexSet];
+
+      if (null != methodGet && null != methodSet) {
+        meter.recap();
+      }
+    }
+    meter.unloop("cycled array");
+
+    meter.finish("← Reflection");
+
+    assertTrue("Output should contain our custom output tag", mOutput.toString().contains(CustomTag));
+  }
+
+  @Test
+  public void test_08_DefaultOutputLogger() {
+    final Meter meter = Meter.getInstance();
+
+    meter.setOutput(null); // reset to default
+    final Meter.Output output = meter.getOutput();
+
+    assertNotNull("Expected default instance of the output", output);
+
+    // custom
+    output.log(Level.INFO, "test-07", "Info");
+    output.log(Level.WARNING, "test-07", "Warning");
+    output.log(Level.SEVERE, "test-07", "Sever");
+    output.log(Level.FINE, "test-07", "Fine");
+
+    // all other
+    output.log(Level.CONFIG, "test-07", "Config");
+    output.log(Level.FINER, "test-07", "Finer");
+    output.log(Level.FINEST, "test-07", "Finest");
+    output.log(Level.ALL, "test-07", "All");
+    output.log(Level.OFF, "test-07", "Off");
+  }
+
+  @Test
+  public void test_09_RecapWithLogMessage() throws Exception {
+    final Meter meter = Meter.getInstance();
+
+    // register custom output provider
+    meter.setOutput(mOutput);
+
+    meter.start("→ Reflection");
+
+    meter.loop(EMPTY_LOG);
+    for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
+      final Method methodGet = DummyPojo.class.getMethod("getMemo");
+
+      if (null != methodGet) {
+        meter.recap(EMPTY_LOG);
+      }
+    }
+    meter.unloop("single GET Method by name");
+
+    meter.loop(EMPTY_LOG);
+    for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
+      final Method methodSet = DummyPojo.class.getMethod("setMemo", String.class);
+
+      if (null != methodSet) {
+        meter.recap("i=" + i);
+      }
+    }
+    meter.unloop("single SET Method by name");
+
+    meter.finish("← Reflection");
+
+    final String search = "i=" + (Sampling.ITERATIONS_L - 1);
+    assertTrue("In log should be last iteration counter", mOutput.toString().contains(search));
+  }
+
+  @Test
+  public void test_10_NestedWithFinish() throws Exception {
+    final Meter meter = Meter.getInstance();
+    meter.setOutput(mOutput);
+
+    meter.start("→ Smoke test");
+
+    SystemClock.sleep(10);
+    meter.skip("warming up");
+
+    SystemClock.sleep(15);
+    meter.beat("initialization");
+
+    final int id;
+
+    // just for highlighting the nested scope
+    {
+      id = meter.start("→→ Sub measurements");
+      meter.loop(Sampling.ITERATIONS_L, EMPTY_LOG);
+      for (int i = 0; i < Sampling.ITERATIONS_L; i++) {
+        final Method m = DummyPojo.class.getMethod("getName");
+        meter.recap(null != m ? "got" : "miss");
+      }
+      meter.unloop();
+      meter.finish(); // end() + stats() + pop()
+    }
+
+    meter.beat("testing loop");
+
+    SystemClock.sleep(10);
+    meter.finish("← Smoke test");
+
+    assertTrue("Nested measurement should have ID bigger zero", 0 < id);
+  }
+
+  @Test
+  public void test_11_Clear() throws Exception {
+    final Meter m = Meter.getInstance();
+    m.setOutput(mOutput);
+
+    m.clear(); // clear call without tracking
+
+    m.start("test-11");
+    assertTrue("tracking is started", m.isTracking());
+
+    m.start("nested #1");
+    assertTrue("tracking is started", m.isTracking());
+
+    m.start("nested #2");
+    assertTrue("tracking is started", m.isTracking());
+
+    m.start("nested #3");
+    assertTrue("tracking is started", m.isTracking());
+
+    m.start("nested #4");
+    assertTrue("tracking is started", m.isTracking());
+
+    m.clear();
+    assertTrue("tracking initial state expected. Nested #4 stay on top.", m.isTracking());
+
+    m.finish();
+
+    assertFalse("tracking stopped", m.isTracking());
+  }
+
+  @Test
+  public void test_12_CycledArray() throws Exception {
+
+    int index = Meter.toArrayIndex(10, 10, 25, 100);
+    assertEquals("Small array inside bigger one", 20, index);
+
+    // initial array filling - 0,1,2,3,4
+    int index0 = Meter.toArrayIndex(0, 0, 5, 5);
+    assertEquals("Small array inside bigger one", 0, index0);
+    int index1 = Meter.toArrayIndex(1, 0, 5, 5);
+    assertEquals("Small array inside bigger one", 1, index1);
+    int index2 = Meter.toArrayIndex(2, 0, 5, 5);
+    assertEquals("Small array inside bigger one", 2, index2);
+    int index3 = Meter.toArrayIndex(3, 0, 5, 5);
+    assertEquals("Small array inside bigger one", 3, index3);
+    int index4 = Meter.toArrayIndex(4, 0, 5, 5);
+    assertEquals("Small array inside bigger one", 4, index4);
+
+    // cycling started - 5,1,2,3,4
+    index1 = Meter.toArrayIndex(0, 1, 5, 5);
+    assertEquals("Cycling testing", 1, index1);
+    index2 = Meter.toArrayIndex(1, 1, 5, 5);
+    assertEquals("Cycling testing", 2, index2);
+    index3 = Meter.toArrayIndex(2, 1, 5, 5);
+    assertEquals("Cycling testing", 3, index3);
+    index4 = Meter.toArrayIndex(3, 1, 5, 5);
+    assertEquals("Cycling testing", 4, index4);
+    index0 = Meter.toArrayIndex(4, 1, 5, 5);
+    assertEquals("Cycling testing", 0, index0);
+
+    // cycling started - 5,6,7,3,4
+    index3 = Meter.toArrayIndex(0, 3, 5, 5);
+    assertEquals("Cycling testing", 3, index3);
+    index4 = Meter.toArrayIndex(1, 3, 5, 5);
+    assertEquals("Cycling testing", 4, index4);
+    index0 = Meter.toArrayIndex(2, 3, 5, 5);
+    assertEquals("Cycling testing", 0, index0);
+    index1 = Meter.toArrayIndex(3, 3, 5, 5);
+    assertEquals("Cycling testing", 1, index1);
+    index2 = Meter.toArrayIndex(4, 3, 5, 5);
+    assertEquals("Cycling testing", 2, index2);
+
+    // negative test
+    try {
+      Meter.toArrayIndex(0, 0, 10, 5);
+
+      fail("wrong parameters forward to method");
+    } catch (final Throwable ignored) {
+    }
+  }
+
+  @Test
+  public void test_13_WrongConfig() throws Exception {
+    final String CustomTag = "test-13";
+    final Meter meter = Meter.getInstance();
+
+    // register custom output provider
+    meter.setOutput(mOutput);
+
+    // do configuration
+    meter.getConfig().OutputTag = CustomTag;
+    meter.getConfig().ShowTopNLongest = -1; // wrong value, should be from 1 and upper
+    meter.getConfig().DoMethodsTrace = true;
+    meter.getConfig().ShowAccumulatedTime = true;
+    meter.getConfig().ShowLogMessage = true;
+    meter.getConfig().ShowStepCostPercents = true;
+    meter.getConfig().ShowStepCostTime = true;
+    meter.getConfig().ShowStepsGrid = true;
+    meter.getConfig().ShowSummary = true;
+    meter.getConfig().ShowTableStart = true;
+    meter.getConfig().UseSystemNanos = true;
+    meter.getConfig().ShowAccumulatedTime = true;
+
+    meter.start("→ Reflection");
+
+    final Method[] methods = DummyPojo.class.getMethods();
+    meter.beat("extract all methods");
+
+    Arrays.sort(methods, sMethodComparator);
+    meter.skip("optimize search");
+
+    // empty loop
+    meter.loop(EMPTY_LOG);
+    meter.unloop(EMPTY_LOG);
+
+    meter.finish("← Reflection");
+
+    assertTrue("Output should contain our custom output tag", mOutput.toString().contains(CustomTag));
   }
 
   /* [ NESTED DECLARATIONS ] ======================================================================================= */
@@ -428,6 +693,5 @@ public class MeterTests {
     public void setMemo(final String memo) {
       mMemo = memo;
     }
-
   }
 }
