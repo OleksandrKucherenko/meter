@@ -23,7 +23,7 @@ env:
     # Define encrypted EMAIL variable
     - secure: "bvDKEsJGhkVHblojj+5da5C6z7Hy93irYJZMtdsNZeiT9eERS9qVXbOgbMAWobNu2SGIA9Ce3hRA4SQ1Y2tWWltrQP54E40nWCcWSZWievRk6UL9JmSkrDf9/tyDKDJo+KnDBLF73MB9tEWaxscYdHCALXnGcoIPRoGACL1BCuA="
     # Define encrypted COVERALLS_REPO_TOKEN variable
-    #- secure: "NO1orR9cZgKB6qLMdfwj2+Mh5has9FFFwIxkNadpK6gjhCR/GOCrQLPqEi5BvX4o5fDV8M01rW0dOoRlgOne4pFIXfuQY6rdVaUDYtTQajx1bEvnTQntY15Fj3Bmi8GDVlgIMkuSJmK62brT8oOderOyOYV5QHgVxOtcznIzAhI="
+    - secure: "NO1orR9cZgKB6qLMdfwj2+Mh5has9FFFwIxkNadpK6gjhCR/GOCrQLPqEi5BvX4o5fDV8M01rW0dOoRlgOne4pFIXfuQY6rdVaUDYtTQajx1bEvnTQntY15Fj3Bmi8GDVlgIMkuSJmK62brT8oOderOyOYV5QHgVxOtcznIzAhI="
     # say gradle to output without color codes, the same as add switch --no-color
     - TERM=dumb
   matrix:
@@ -111,6 +111,8 @@ script:
   #- travis_retry ./gradlew build connectedCheck --info
   #- ./gradlew build connectedCheck --info
   - ./gradlew test
+  # cleanup a little for better caching reuse
+  - rm $HOME/.gradle/daemon/2.2.1/registry.bin.lock
 
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
