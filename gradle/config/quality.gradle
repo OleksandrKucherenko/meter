@@ -96,7 +96,7 @@ if (ENABLE_QUALITY) {
             task jacocoResults(type: JacocoReport, dependsOn: ['test']) {
                 description = "Generates Jacoco coverage reports: XML and HTML"
                 group = "Reporting"
-//                outputs.upToDateWhen { false }
+                outputs.upToDateWhen { false }
 
                 // use hidden configuration, for details look into JacocoPlugin.groovy
                 jacocoClasspath = project.configurations['androidJacocoAnt']
@@ -116,13 +116,13 @@ if (ENABLE_QUALITY) {
 
                 reports {
                     xml {
-                        enabled = true
-                        destination = "${project.buildDir}/reports/jacoco/jacoco.xml"
+                        enabled true
+                        destination "${project.buildDir}/reports/jacoco/jacoco.xml"
                     }
                     csv.enabled false
                     html {
-                        enabled = true
-                        destination = "${project.buildDir}/reports/jacoco"
+                        enabled true
+                        destination "${project.buildDir}/reports/jacoco"
                     }
                 }
             }

@@ -95,8 +95,8 @@ android {
     buildTypes {
         debug {
             testCoverageEnabled useJacoco
-            debuggable true
-            jniDebuggable true
+//            debuggable true
+//            jniDebuggable true
             shrinkResources false /* incompatible with useJack !!! */
         }
         release {
@@ -206,17 +206,19 @@ task patchMockableAndroidJar(type: Zip, dependsOn: copyMockableAndroidJar) {
 if (useJacoco) {
     /* http://raptordigital.blogspot.se/2014/08/code-coverage-reports-using-robolectric.html */
     apply plugin: 'jacoco'
+    apply plugin: 'com.github.kt3k.coveralls'
 
     /* be specific about JaCoCo version. */
     jacoco {
         version JaCoCoVersion
         //destinationFile = file("${project.buildDir}/jacoco/jacoco.exec")
     }
-}
 
-apply plugin: 'com.github.kt3k.coveralls'
-coveralls.jacocoReportPath = "${project.buildDir}/outputs/reports/jacoco/jacoco.xml"
-tasks.coveralls.dependsOn 'jacocoResults'
+
+    coveralls.jacocoReportPath = "${project.buildDir}/outputs/reports/jacoco/jacoco.xml"
+
+    tasks.coveralls.dependsOn 'jacocoResults'
+}
 
 /* [ ARTIFACTS ] ==================================================================================================== */
 

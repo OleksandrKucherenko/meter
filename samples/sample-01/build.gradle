@@ -15,10 +15,26 @@ buildscript {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force "org.jacoco:org.jacoco.agent:${JaCoCoVersion}", "org.jacoco:org.jacoco.ant:${JaCoCoVersion}"
+        forcedModules = ["org.jacoco:org.jacoco.agent:${JaCoCoVersion}", "org.jacoco:org.jacoco.ant:${JaCoCoVersion}"]
+
+        eachDependency { DependencyResolveDetails details ->
+            rootProject.logger.lifecycle('    dependency: ' + details.dump())
+        }
+    }
+}
+
 // CONFIGURATION based on: http://tools.android.com/tech-docs/new-build-system/user-guide
 
 apply plugin: 'com.android.application'
 apply from: "${rootProject.rootDir}/gradle/config/quality.gradle"
+
+//dependencies {
+//    androidJacocoAgent "org.jacoco:org.jacoco.agent:${JaCoCoVersion}"
+//    androidJacocoAnt "org.jacoco:org.jacoco.ant:${JaCoCoVersion}"
+//}
 
 /* DEFINE REPOSITORY WITH LATEST ROBOLECTRIC VERSION */
 repositories {
@@ -350,16 +366,16 @@ android {
 if (useJacoco) {
     /* http://raptordigital.blogspot.se/2014/08/code-coverage-reports-using-robolectric.html */
     apply plugin: 'jacoco'
+    apply plugin: 'com.github.kt3k.coveralls'
 
     /* be specific about JaCoCo version. */
     jacoco {
         version JaCoCoVersion
     }
-}
 
-apply plugin: 'com.github.kt3k.coveralls'
-coveralls.jacocoReportPath = "${project.buildDir}/outputs/reports/jacoco/jacoco.xml"
-tasks.coveralls.dependsOn 'jacocoResults'
+    coveralls.jacocoReportPath = "${project.buildDir}/outputs/reports/jacoco/jacoco.xml"
+    tasks.coveralls.dependsOn 'jacocoResults'
+}
 
 /* [ CUSTOM TASKS ] ================================================================================================= */
 

@@ -110,7 +110,7 @@ script:
   # second run will be fast!
   #- travis_retry ./gradlew build connectedCheck --info
   #- ./gradlew build connectedCheck --info
-  - ./gradlew test
+  - ./gradlew jacocoResults
 
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
