@@ -22,6 +22,13 @@ buildscript {
 
 // CONFIGURATION based on: http://tools.android.com/tech-docs/new-build-system/user-guide
 
+if (useJacoco) {
+    // NOTE: very important to register JaCoCo plugin before the Android, otherwise XML
+    // coverage report will be impossible to generate. Will work only HTML reporting.
+
+    /* http://raptordigital.blogspot.se/2014/08/code-coverage-reports-using-robolectric.html */
+    apply plugin: 'jacoco'
+}
 apply plugin: 'com.android.library'
 apply from: "${rootProject.rootDir}/gradle/config/quality.gradle"
 
@@ -204,19 +211,16 @@ task patchMockableAndroidJar(type: Zip, dependsOn: copyMockableAndroidJar) {
 /* [ COVERALLS ] ==================================================================================================== */
 
 if (useJacoco) {
-    /* http://raptordigital.blogspot.se/2014/08/code-coverage-reports-using-robolectric.html */
-    apply plugin: 'jacoco'
-
     /* be specific about JaCoCo version. */
     jacoco {
         version JaCoCoVersion
         //destinationFile = file("${project.buildDir}/jacoco/jacoco.exec")
     }
-}
 
-apply plugin: 'com.github.kt3k.coveralls'
-coveralls.jacocoReportPath = "${project.buildDir}/outputs/reports/jacoco/jacoco.xml"
-tasks.coveralls.dependsOn 'jacocoResults'
+    apply plugin: 'com.github.kt3k.coveralls'
+    coveralls.jacocoReportPath = "${project.buildDir}/reports/jacoco/jacoco.xml"
+    tasks.coveralls.dependsOn 'jacocoResults'
+}
 
 /* [ ARTIFACTS ] ==================================================================================================== */
 
