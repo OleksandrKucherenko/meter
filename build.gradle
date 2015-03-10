@@ -112,6 +112,7 @@ allprojects {
 
 /* PRINT to output configuration details of the build. */
 println new String(new char[80]).replace("\0", "-")
+println 'Android Gradle Plugin: ' + project.GRADLE_PLUGIN
 println 'Android Build Tools: ' + project.ANDROID_BUILD_TOOLS_VERSION
 println 'Android SDK version: ' + project.ANDROID_BUILD_SDK_VERSION
 println 'Android Support Library: ' + project.ANDROID_SUPPORT_LIB_VERSION

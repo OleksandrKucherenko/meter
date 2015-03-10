@@ -413,6 +413,7 @@ public class MeterTests {
     meter.getConfig().ShowTableStart = false;
     meter.getConfig().UseSystemNanos = false;
     meter.getConfig().ShowAccumulatedTime = false;
+    meter.getConfig().ShowTopNLongest = 0;
 
     meter.start("→ Reflection");
 
@@ -651,6 +652,14 @@ public class MeterTests {
     meter.finish("← Reflection");
 
     assertTrue("Output should contain our custom output tag", mOutput.toString().contains(CustomTag));
+  }
+
+  @Test
+  public void test_14_Formatting() throws Exception {
+    final String format = "%5.2f%% %5.2f%% %5.2f%% %5.2f%% %5.2f%%";
+    final String result = String.format(Locale.US, format, 100, 99.99, 0.01, 0, Float.NaN);
+
+    mOutput.log(Level.INFO, "Formats", result);
   }
 
   /* [ NESTED DECLARATIONS ] ======================================================================================= */

@@ -987,6 +987,8 @@ public final class Meter {
       /** {@inheritDoc} */
       @Override
       public int compare(final Step lhs, final Step rhs) {
+        //region Implementation
+
         // output: left less right  == -1
         // output: left more right  == 1
         // output: left equal right == 0
@@ -998,6 +1000,7 @@ public final class Meter {
 
         // for skipped element shift there time to 0, that will make them last in list
         return -1 * Long.valueOf(lhs.Total - lhs.Skipped).compareTo(rhs.Total - rhs.Skipped);
+        //endregion
       }
     };
 
