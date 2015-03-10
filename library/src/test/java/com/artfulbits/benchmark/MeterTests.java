@@ -13,8 +13,10 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 
@@ -656,10 +658,33 @@ public class MeterTests {
 
   @Test
   public void test_14_Formatting() throws Exception {
-    final String format = "%5.2f%% %5.2f%% %5.2f%% %5.2f%% %5.2f%%";
-    final String result = String.format(Locale.US, format, 100, 99.99, 0.01, 0, Float.NaN);
+    final List<Object> list = new ArrayList<>(20);
+    list.add(0.0);
+    list.add(0.01);
+    list.add(100.0);
+    list.add(99.99);
+    list.add(0.0001);
+    list.add(Float.NaN);
 
-    mOutput.log(Level.INFO, "Formats", result);
+    final String sub = " %5.2f%%";
+    final Object[] args = list.toArray();
+
+    // modify formatting
+    final StringBuilder sb = new StringBuilder(new String(new char[list.size()]).replace("\0", sub));
+    for (int i = 0, len = list.size(); i < len; i++) {
+      final Number n = (Number) list.get(i);
+      if (100.0 == n.floatValue()) {
+        sb.setCharAt(i * sub.length() + 4, '1');
+      }
+    }
+
+    final String format = sb.toString();
+    final String result = String.format(Locale.US, format, args);
+
+    mOutput.log(Level.INFO, "Formats", format);
+    mOutput.log(Level.INFO, "Results", result);
+
+    assertTrue("Expected 100.0% formatting.", result.contains(" 100.0% "));
   }
 
   /* [ NESTED DECLARATIONS ] ======================================================================================= */
