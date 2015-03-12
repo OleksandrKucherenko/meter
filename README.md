@@ -4,9 +4,31 @@ Meter - is a simple micro-benchmarking tool for Android (not only for Android, i
 
 It was designed for Android. Meter try to make measurement an easy task, with minimal impact on total project performance.
 
+By using it you can easily benchmark critical components of own Android Projects and select the best possible way based on real measurments, instead of making gueses. It can be easily attached to jUnits and on each run will confirm performance choices.
+
+>
+> Programmers waste enormous amounts of time thinking about, or worrying about, the speed of noncritical parts of their programs, and these attempts at efficiency actually have a strong negative impact when debugging and maintenance are considered. We should forget about small efficiencies, say about 97% of the time: premature optimization is the root of all evil. Yet we should not pass up our opportunities in that critical 3%.
+>
+> (C) Donald Knuth - http://en.wikiquote.org/wiki/Donald_Knuth
+>
+
 # State [![Build Status](https://secure.travis-ci.org/OleksandrKucherenko/meter.png?branch=master)](https://travis-ci.org/OleksandrKucherenko/meter) [![Coverage Status](https://coveralls.io/repos/OleksandrKucherenko/meter/badge.svg?branch=master)](https://coveralls.io/r/OleksandrKucherenko/meter?branch=master) [![Coverity Scan Build Status](https://scan.coverity.com/projects/3248/badge.svg)](https://scan.coverity.com/projects/3248) [ ![Download](https://api.bintray.com/packages/kucherenko-alex/android/com.artfulbits%3Ameter/images/download.svg) ](https://bintray.com/kucherenko-alex/android/com.artfulbits%3Ameter/_latestVersion)
 
 Active development, started at: 2014-07-13
+
+# Include Into Project
+
+```
+repositories {
+    jcenter()
+}
+
+dependencies {
+    // ALTERNATIVE: 
+    //   compile(group: 'com.artfulbits', name: 'meter', version: '1.0.1.141', ext: 'aar')
+    compile 'com.artfulbits:meter:+@aar'
+}
+```
 
 # Advanced topics
 
