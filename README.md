@@ -8,6 +8,20 @@ It was designed for Android. Meter try to make measurement an easy task, with mi
 
 Active development, started at: 2014-07-13
 
+# Include Into Project
+
+```
+repositories {
+    jcenter()
+}
+
+dependencies {
+    // ALTERNATIVE: 
+    //   compile(group: 'com.artfulbits', name: 'meter', version: '1.0.1.141', ext: 'aar')
+    compile 'com.artfulbits:meter:+@aar'
+}
+```
+
 # Advanced topics
 
 [Accuracy of Measurements](_documentation/accuracy.md)
