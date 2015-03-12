@@ -45,7 +45,7 @@ dependencies {
         compile 'com.android.support:multidex:+'
     }
 
-    compile project(':library')
+    compile project(':meter')
 
     /* [ UNIT TESTING ] ============================================================================================= */
     if (useTesting) {
