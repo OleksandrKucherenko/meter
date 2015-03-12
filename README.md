@@ -18,7 +18,7 @@ Active development, started at: 2014-07-13
 
 # Include Into Project
 
-```
+```groovy
 repositories {
     jcenter()
 }
