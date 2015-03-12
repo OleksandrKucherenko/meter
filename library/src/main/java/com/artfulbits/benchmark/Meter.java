@@ -116,7 +116,7 @@ public final class Meter {
    * Calibrate class, benchmark cost of execution for Meter class on a specific device. Allows to compute more
    * accurate results during statistics displaying.
    *
-   * @returns instance of captured calibration metrics.
+   * @return instance of captured calibration metrics.
    */
   public Calibrate calibrate() {
     // DONE: measure each method execution time and store for future calculations
@@ -617,7 +617,10 @@ public final class Meter {
     public boolean ShowTableStart;
     /** Show in statistics summary list of longest steps. Define the Number of steps to show. */
     public int ShowTopNLongest;
-    /** True - use {@link System#nanoTime()}, otherwise use {@link SystemClock#elapsedRealtimeNanos()}. */
+    /**
+     * True - use {@link java.lang.System#nanoTime()}, otherwise use
+     * {@link android.os.SystemClock#elapsedRealtimeNanos()}.
+     */
     public boolean UseSystemNanos;
 
     /** Default constructor */
@@ -625,7 +628,11 @@ public final class Meter {
       reset();
     }
 
-    /** Default path used for trace DUMPs. */
+    /**
+     * Default path used for trace DUMPs.
+     *
+     * @return default path to folder where trace information will be stored
+     */
     public static String getDefaultTraceFilePath() {
       // NOTE: for making Meter compatible with JVM tests - I expect exception from
       // runner side: "java.lang.RuntimeException: Method setUp in android.test.AndroidTestCase
