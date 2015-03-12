@@ -112,7 +112,7 @@ script:
   #- ./gradlew build connectedCheck --info
   - ./gradlew test
   # cleanup a little for better caching reuse
-  - rm $HOME/.gradle/daemon/2.2.1/registry.bin.lock
+  - rm $HOME/.gradle/daemon/2.2.1/*.*
 
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
