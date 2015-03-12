@@ -119,7 +119,7 @@ after_success:
   ############# dump structure of the project
   #- ls -R
   ############# coverage report
-  - ./gradlew :library:coveralls
+  - ./gradlew :meter:coveralls
 
 notifications:
   email: false
