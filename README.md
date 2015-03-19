@@ -2,6 +2,7 @@
 # State [![Build Status](https://secure.travis-ci.org/OleksandrKucherenko/meter.png?branch=master)](https://travis-ci.org/OleksandrKucherenko/meter) [![Coverage Status](https://coveralls.io/repos/OleksandrKucherenko/meter/badge.svg?branch=master)](https://coveralls.io/r/OleksandrKucherenko/meter?branch=master) [![Coverity Scan Build Status](https://scan.coverity.com/projects/3248/badge.svg)](https://scan.coverity.com/projects/3248) [ ![Download](https://api.bintray.com/packages/kucherenko-alex/android/com.artfulbits%3Ameter/images/download.svg) ](https://bintray.com/kucherenko-alex/android/com.artfulbits%3Ameter/_latestVersion) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/OleksandrKucherenko/meter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Active development, started at: 2014-07-13
+
 Current state: on hold. Collecting devs feedback.
 
 # What is meter?
