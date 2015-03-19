@@ -1,5 +1,7 @@
 # meter
 
+[![Join the chat at https://gitter.im/OleksandrKucherenko/meter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/OleksandrKucherenko/meter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Meter - is a simple micro-benchmarking tool for Android (not only for Android, its actually for any Java project).
 
 It was designed for Android. Meter try to make measurement an easy task, with minimal impact on total project performance.
