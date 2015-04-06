@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 /**
- * Performance measurement class. Should be used for micro-benchmarking and
- * comparison of different implementations. Class implements very simple logic.
+ * Performance measurement class. Should be used for micro-benchmarking and comparison of different implementations.
+ * Class implements very simple logic.
  */
 @SuppressWarnings({"UnusedDeclaration", "PMD.UselessParentheses", "PMD.GodClass",
     "PMD.TooManyMethods", "PMD.ExcessiveClassLength", "PMD.ExcessivePublicCount"})
@@ -30,32 +30,52 @@ import java.util.logging.Level;
 public final class Meter {
     /* [ CONSTANTS ] ============================================================================================= */
 
-  /** Flag. Tells Meter class that loop is with unknown number of iterations. */
+  /**
+   * Flag. Tells Meter class that loop is with unknown number of iterations.
+   */
   public static final int LOOP_ENDLESS = -1000;
 
-  /** preallocate size for reduce performance impacts. */
+  /**
+   * preallocate size for reduce performance impacts.
+   */
   private static final int PREALLOCATE = 256;
-  /** length of the delimiter line. */
+  /**
+   * length of the delimiter line.
+   */
   private static final int DELIMITER_LENGTH = 80;
-  /** Delimiter for statistics output. */
+  /**
+   * Delimiter for statistics output.
+   */
   private static final String DELIMITER = new String(new char[DELIMITER_LENGTH]).replace("\0", "-");
 
 	/* [ STATIC MEMBERS ] ========================================================================================== */
 
-  /** Store instance of Meter per thread. */
-  private final static WeakHashMap<Thread, Meter> sThreadsToMeter = new WeakHashMap<Thread, Meter>();
+  /**
+   * Store instance of Meter per thread.
+   */
+  private final static WeakHashMap<Thread, Meter> sThreadsToMeter = new WeakHashMap<>();
 
 	/* [ MEMBERS ] ================================================================================================= */
 
-  /** Current active measure. */
+  /**
+   * Current active measure.
+   */
   private Measure mCurrent;
-  /** reference on Log output instance. */
+  /**
+   * reference on Log output instance.
+   */
   private Output mLog;
-  /** List of captured measures. */
-  private final List<Measure> mMeasures = new ArrayList<Measure>(PREALLOCATE);
-  /** Instance of the meter class configuration. */
+  /**
+   * List of captured measures.
+   */
+  private final List<Measure> mMeasures = new ArrayList<>(PREALLOCATE);
+  /**
+   * Instance of the meter class configuration.
+   */
   private final Config mConfig = new Config();
-  /** Calibrate metrics. */
+  /**
+   * Calibrate metrics.
+   */
   private final Calibrate mCalibrate = new Calibrate();
 
 	/* [ OPTIONS ] ================================================================================================= */
@@ -113,8 +133,8 @@ public final class Meter {
 	/* [ STATIC METHODS ] ========================================================================================== */
 
   /**
-   * Calibrate class, benchmark cost of execution for Meter class on a specific device. Allows to compute more
-   * accurate results during statistics displaying.
+   * Calibrate class, benchmark cost of execution for Meter class on a specific device. Allows to compute more accurate
+   * results during statistics displaying.
    *
    * @return instance of captured calibration metrics.
    */
@@ -153,7 +173,9 @@ public final class Meter {
     return mCalibrate;
   }
 
-  /** Method used for timestamp value extracting. */
+  /**
+   * Method used for timestamp value extracting.
+   */
   @SuppressLint("NewApi")
   private long timestamp() {
     final boolean apiLevel = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1);
@@ -206,7 +228,9 @@ public final class Meter {
     return id;
   }
 
-  /** Add/Include step beat interval into benchmarking report. */
+  /**
+   * Add/Include step beat interval into benchmarking report.
+   */
   private void beat() {
     mCurrent.add(timestamp(), Bits.INCLUDE);
   }
@@ -230,7 +254,9 @@ public final class Meter {
     mCurrent.Logs.append(mCurrent.Position.get() - 1, log);
   }
 
-  /** Skip/Ignore/Exclude step interval from benchmarking. */
+  /**
+   * Skip/Ignore/Exclude step interval from benchmarking.
+   */
   public void skip() {
     mCurrent.add(timestamp(), Bits.EXCLUDE);
   }
@@ -245,7 +271,9 @@ public final class Meter {
     log(log);
   }
 
-  /** Start the loop tracking with unknown number of iterations. */
+  /**
+   * Start the loop tracking with unknown number of iterations.
+   */
   public void loop() {
     loop(LOOP_ENDLESS);
   }
@@ -276,14 +304,16 @@ public final class Meter {
    * Start the loop tracking.
    *
    * @param counter maximum number of iterations.
-   * @param log     log message.
+   * @param log log message.
    */
   public void loop(final int counter, final String log) {
     loop(counter);
     log(log);
   }
 
-  /** Inside the loop store one iteration time. */
+  /**
+   * Inside the loop store one iteration time.
+   */
   public void recap() {
     mCurrent.add(timestamp(), Bits.INCLUDE | Bits.RECAP);
   }
@@ -298,7 +328,9 @@ public final class Meter {
     log(log);
   }
 
-  /** Loop ends. Finalize benchmarking of the loop. */
+  /**
+   * Loop ends. Finalize benchmarking of the loop.
+   */
   public void unloop() {
     mCurrent.add(timestamp(), Bits.UNLOOP);
   }
@@ -313,7 +345,9 @@ public final class Meter {
     log(log);
   }
 
-  /** End benchmarking, print statistics, prepare class for next run. */
+  /**
+   * End benchmarking, print statistics, prepare class for next run.
+   */
   public void finish() {
     end();
     stats();
@@ -331,7 +365,9 @@ public final class Meter {
     pop();
   }
 
-  /** End benchmarking. */
+  /**
+   * End benchmarking.
+   */
   public void end() {
     mCurrent.add(timestamp(), Bits.END);
 
@@ -352,7 +388,9 @@ public final class Meter {
 
 	/* [ NESTED METERS ] =========================================================================================== */
 
-  /** Remove from measurements stack last done tracking. Method switches current Measure instance to next in stack. */
+  /**
+   * Remove from measurements stack last done tracking. Method switches current Measure instance to next in stack.
+   */
   public void pop() {
     synchronized (mMeasures) {
       mMeasures.remove(mCurrent);
@@ -360,7 +398,9 @@ public final class Meter {
     }
   }
 
-  /** Cleanup the nested measures storage and leave only current active on top. */
+  /**
+   * Cleanup the nested measures storage and leave only current active on top.
+   */
   public void clear() {
     synchronized (mMeasures) {
       mMeasures.clear();
@@ -373,7 +413,9 @@ public final class Meter {
 
   /* [ REPORTS ] ================================================================================================= */
 
-  /** Print captured statistics into default output. */
+  /**
+   * Print captured statistics into default output.
+   */
   @SuppressWarnings({"PMD.AvoidInstantiatingObjectsInLoops"})
   public void stats() {
     stats(getOutput());
@@ -388,7 +430,7 @@ public final class Meter {
   public void stats(final Output log) {
     final Config config = getConfig();
     final int totalSteps = mCurrent.Position.get();
-    final List<Step> steps = new ArrayList<Step>(totalSteps);
+    final List<Step> steps = new ArrayList<>(totalSteps);
     long totalSkipped = 0;
 
     Step subStep;
@@ -413,7 +455,8 @@ public final class Meter {
           totalSteps));
     }
 
-    final PriorityQueue<Step> pq = new PriorityQueue<Step>(totalSteps, Step.Comparator);
+    // create sorted list of steps for TOP-N items print
+    final PriorityQueue<Step> pq = new PriorityQueue<>(totalSteps, Step.Comparator);
     pq.addAll(steps);
 
     // publish longest steps
@@ -433,6 +476,44 @@ public final class Meter {
     log.log(Level.FINEST, config.OutputTag, DELIMITER);
   }
 
+  /**
+   * Compare LEFT and RIGHT steps with {@link com.artfulbits.benchmark.Meter.Nanos#ONE_MILLIS} accuracy.
+   *
+   * @param left step number. unique numbers only. Less than total number of steps.
+   * @param right step number. unique numbers only. Less than total number of steps.
+   * @return possible results: {@link com.artfulbits.benchmark.Meter.Nanos#COMPARE_EQUAL}, {@link
+   * com.artfulbits.benchmark.Meter.Nanos#COMPARE_GREATER}, {@link com.artfulbits.benchmark.Meter.Nanos#COMPARE_LESS}.
+   */
+  public int compare(final int left, final int right) {
+    return compare(new int[]{left}, new int[]{right}, Nanos.ONE_MILLIS);
+  }
+
+  /**
+   * Compare LEFT and RIGHT steps with specified accuracy.
+   *
+   * @param left step number. unique numbers only. Less than total number of steps.
+   * @param right step number. unique numbers only. Less than total number of steps.
+   * @param accuracy nanos value which should be used as the level of lowest accuracy (bottom trim).
+   * @return possible results: {@link com.artfulbits.benchmark.Meter.Nanos#COMPARE_EQUAL}, {@link
+   * com.artfulbits.benchmark.Meter.Nanos#COMPARE_GREATER}, {@link com.artfulbits.benchmark.Meter.Nanos#COMPARE_LESS}.
+   */
+  public int compare(final int left, final int right, final long accuracy) {
+    return compare(new int[]{left}, new int[]{right}, accuracy);
+  }
+
+  /**
+   * Compare sum of LEFT and RIGHT steps with specified accuracy.
+   *
+   * @param left array of step numbers, unique numbers only. Less than total number of steps.
+   * @param right array of step numbers, unique numbers only. Less than total number of steps.
+   * @param accuracy nanos value which should be used as the level of lowest accuracy (bottom trim).
+   * @return possible results: {@link com.artfulbits.benchmark.Meter.Nanos#COMPARE_EQUAL}, {@link
+   * com.artfulbits.benchmark.Meter.Nanos#COMPARE_GREATER}, {@link com.artfulbits.benchmark.Meter.Nanos#COMPARE_LESS}.
+   */
+  public int compare(final int[] left, final int[] right, final long accuracy) {
+    return 0;
+  }
+
   /* [ UTILITIES ] =============================================================================================== */
 
   /**
@@ -443,7 +524,7 @@ public final class Meter {
    */
   @SuppressWarnings({"PMD.UseArraysAsList", "PMD.LocalVariableCouldBeFinal"})
   public static List<Object> toParams(final long[] timing) {
-    final List<Object> params = new ArrayList<Object>(Math.max(timing.length, PREALLOCATE));
+    final List<Object> params = new ArrayList<>(Math.max(timing.length, PREALLOCATE));
 
     for (int j = 0, len = timing.length; j < len; j++) {
       params.add(timing[j]);
@@ -456,8 +537,8 @@ public final class Meter {
    * Calculate percent value.
    *
    * @param value current value.
-   * @param min   x-scale start point.
-   * @param max   y-scale end point.
+   * @param min x-scale start point.
+   * @param max y-scale end point.
    * @return calculated percent value.
    */
   public static double percent(final long value, final long min, final long max) {
@@ -470,10 +551,10 @@ public final class Meter {
   /**
    * Convert range [0..counter] to position in cycled array.
    *
-   * @param index    index to convert.
+   * @param index index to convert.
    * @param position current cycled position in array.
-   * @param count    quantity of elements stored in array.
-   * @param length   length of the array.
+   * @param count quantity of elements stored in array.
+   * @param length length of the array.
    * @return converted index;
    */
   public static int toArrayIndex(final int index, final int position, final int count, final int length) {
@@ -507,7 +588,9 @@ public final class Meter {
 
 	/* [ CONSTRUCTORS ] ============================================================================================ */
 
-  /** Hidden constructor. */
+  /**
+   * Hidden constructor.
+   */
   private Meter() {
     // do nothing, just keep the protocol of calls safe
   }
@@ -535,36 +618,57 @@ public final class Meter {
 	/* [ NESTED DECLARATIONS ] ===================================================================================== */
 
   /**
-   * Flags that we use for identifying measurement steps. First part of the long value is used
-   * for custom data attaching, like: size of the array, index in array, etc.
-   * Please do not use first 32 bits for any state flags.
-   * Note: all fields declared in interface by default become "public final static".
+   * Flags that we use for identifying measurement steps. First part of the long value is used for custom data
+   * attaching, like: size of the array, index in array, etc. Please do not use first 32 bits for any state flags. Note:
+   * all fields declared in interface by default become "public final static".
    */
   @SuppressWarnings("PMD.AvoidConstantsInterface")
   private interface Bits {
-    /** Time stamp included into statistics. */
+    /**
+     * Time stamp included into statistics.
+     */
     long INCLUDE = 0x000100000000L;
-    /** Time stamp excluded into statistics. */
+    /**
+     * Time stamp excluded into statistics.
+     */
     long EXCLUDE = 0x000200000000L;
-    /** Time stamp of Loop point creation. */
+    /**
+     * Time stamp of Loop point creation.
+     */
     long LOOP = 0x000400000000L;
-    /** Time stamp of exiting from loop. */
+    /**
+     * Time stamp of exiting from loop.
+     */
     long UNLOOP = 0x000800000000L;
-    /** Time stamp of loop iteration. */
+    /**
+     * Time stamp of loop iteration.
+     */
     long RECAP = 0x001000000000L;
-    /** The loop is endless. */
+    /**
+     * The loop is endless.
+     */
     long ENDLESS = 0x002000000000L;
-    /** Time stamp start of statistics collecting. */
+    /**
+     * Time stamp start of statistics collecting.
+     */
     long START = 0x100000000000L;
-    /** Time stamp ends of statistics collecting. */
+    /**
+     * Time stamp ends of statistics collecting.
+     */
     long END = 0x200000000000L;
-    /** Bits cleanup mask. */
+    /**
+     * Bits cleanup mask.
+     */
     long MASK = 0xffffffffL;
   }
 
-  /** Constants of time units calculated in Nanos. */
+  /**
+   * Constants of time units calculated in Nanos.
+   */
   @SuppressWarnings("PMD.AvoidConstantsInterface")
   public interface Nanos {
+    /** One microsecond in nanos. */
+    long ONE_MICROS = 1L /*micro*/ * 1000L /*nanos*/;
     /** One millisecond in nanos. */
     long ONE_MILLIS = 1L /*millis*/ * 1000L /*micros*/ * 1000L /*nanos*/;
     /** One second in nanos. */
@@ -573,23 +677,36 @@ public final class Meter {
     long ONE_MINUTE = 1L /*min*/ * 60L /*sec*/ * ONE_SECOND;
     /** One hour in nanos. */
     long ONE_HOUR = 1L /*hour*/ * 60L /*min*/ * ONE_MINUTE;
+
+    /** Comparison shows EQUAL time intervals. */
+    int COMPARE_EQUAL = 0;
+    /** Comparison shows LEFT side is LESS than RIGHT time intervals. */
+    int COMPARE_LESS = -1;
+    /** Comparison shows LEFT side is GREATER than RIGHT time intervals. */
+    int COMPARE_GREATER = 1;
   }
 
-  /** Output interface. */
+  /**
+   * Output interface.
+   */
   public interface Output {
     /**
      * Log measure message with defined Level and tag.
      *
      * @param level the level of logging. (Mostly used for coloring the output)
-     * @param tag   the tag (tag of the output)
-     * @param msg   the message to display.
+     * @param tag the tag (tag of the output)
+     * @param msg the message to display.
      */
     void log(final Level level, final String tag, final String msg);
   }
 
-  /** Statistics output and Tracking behavior configuration. */
+  /**
+   * Statistics output and Tracking behavior configuration.
+   */
   public final static class Config {
-    /** Output tag for logs used by meter class. */
+    /**
+     * Output tag for logs used by meter class.
+     */
     public String OutputTag;
     /**
      * Default DUMP trace file name. Used only when {@link Config#DoMethodsTrace} is set to <code>true</code>. Field
@@ -601,29 +718,46 @@ public final class Meter {
      * Config#MethodsTraceFilePath}* defines the output file name for trace info.
      */
     public boolean DoMethodsTrace;
-    /** <code>true</code> - show steps grid in output, otherwise <code>false</code>. */
+    /**
+     * <code>true</code> - show steps grid in output, otherwise <code>false</code>.
+     */
     public boolean ShowStepsGrid;
-    /** <code>true</code> - show accumulated time column, otherwise <code>false</code>. */
+    /**
+     * <code>true</code> - show accumulated time column, otherwise <code>false</code>.
+     */
     public boolean ShowAccumulatedTime;
-    /** <code>true</code> - show cost in percents column, otherwise <code>false</code>. */
+    /**
+     * <code>true</code> - show cost in percents column, otherwise <code>false</code>.
+     */
     public boolean ShowStepCostPercents;
-    /** <code>true</code> - show step cost time column, otherwise <code>false</code>. */
+    /**
+     * <code>true</code> - show step cost time column, otherwise <code>false</code>.
+     */
     public boolean ShowStepCostTime;
-    /** <code>true</code> - show log message column, otherwise <code>false</code>. */
+    /**
+     * <code>true</code> - show log message column, otherwise <code>false</code>.
+     */
     public boolean ShowLogMessage;
-    /** <code>true</code> - show after tracking summary, otherwise <code>false</code>. */
+    /**
+     * <code>true</code> - show after tracking summary, otherwise <code>false</code>.
+     */
     public boolean ShowSummary;
-    /** <code>true</code> - place column starter symbol "| " on each row start, otherwise <code>false</code>. */
+    /**
+     * <code>true</code> - place column starter symbol "| " on each row start, otherwise <code>false</code>.
+     */
     public boolean ShowTableStart;
-    /** Show in statistics summary list of longest steps. Define the Number of steps to show. */
+    /**
+     * Show in statistics summary list of longest steps. Define the Number of steps to show.
+     */
     public int ShowTopNLongest;
     /**
-     * True - use {@link java.lang.System#nanoTime()}, otherwise use
-     * {@link android.os.SystemClock#elapsedRealtimeNanos()}.
+     * True - use {@link java.lang.System#nanoTime()}, otherwise use {@link android.os.SystemClock#elapsedRealtimeNanos()}.
      */
     public boolean UseSystemNanos;
 
-    /** Default constructor */
+    /**
+     * Default constructor
+     */
     public Config() {
       reset();
     }
@@ -646,7 +780,9 @@ public final class Meter {
       }
     }
 
-    /** Reset configuration to default settings. */
+    /**
+     * Reset configuration to default settings.
+     */
     public void reset() {
       OutputTag = "meter";
       MethodsTraceFilePath = getDefaultTraceFilePath() + "dmtrace.trace";
@@ -656,7 +792,9 @@ public final class Meter {
     }
   }
 
-  /** Calibration results holder. */
+  /**
+   * Calibration results holder.
+   */
   public final static class Calibrate {
     /**
      * The Start.
@@ -704,28 +842,50 @@ public final class Meter {
     }
   }
 
-  /** Internal class for storing measurement statistics. */
+  /**
+   * Internal class for storing measurement statistics.
+   */
   private final static class Measure {
-    /** Unique identifier of the measurement instance. */
+    /**
+     * Unique identifier of the measurement instance.
+     */
     public final int Id;
-    /** Unique identifier of the thread which instantiate the class. */
+    /**
+     * Unique identifier of the thread which instantiate the class.
+     */
     @SuppressWarnings("unused")
     public final long ThreadId;
-    /** The start time of tracking. */
+    /**
+     * The start time of tracking.
+     */
     public final long Start;
-    /** Stored timestamp of each benchmarking call. */
+    /**
+     * Stored timestamp of each benchmarking call.
+     */
     public final long[] Ranges = new long[PREALLOCATE];
-    /** Stored flags for each corresponding timestamp in {@link #Ranges}. */
+    /**
+     * Stored flags for each corresponding timestamp in {@link #Ranges}.
+     */
     public final long[] Flags = new long[PREALLOCATE];
-    /** Current position in the benchmarking array {@link #Ranges}. */
+    /**
+     * Current position in the benchmarking array {@link #Ranges}.
+     */
     public final AtomicInteger Position = new AtomicInteger();
-    /** Stack of loop's executed during benchmarking. */
-    public final Queue<Integer> LoopsQueue = new ArrayDeque<Integer>(PREALLOCATE);
-    /** Step index - to - Loop. */
-    public final SparseArray<Loop> Loops = new SparseArray<Loop>();
-    /** Step index - to - Log message. */
-    public final SparseArray<String> Logs = new SparseArray<String>(PREALLOCATE);
-    /** Reference on parent class instance. */
+    /**
+     * Stack of loop's executed during benchmarking.
+     */
+    public final Queue<Integer> LoopsQueue = new ArrayDeque<>(PREALLOCATE);
+    /**
+     * Step index - to - Loop.
+     */
+    public final SparseArray<Loop> Loops = new SparseArray<>();
+    /**
+     * Step index - to - Log message.
+     */
+    public final SparseArray<String> Logs = new SparseArray<>(PREALLOCATE);
+    /**
+     * Reference on parent class instance.
+     */
     public final Meter Parent;
 
 		/* [ CONSTRUCTOR ] ============================================================================================ */
@@ -748,14 +908,18 @@ public final class Meter {
       add(Start, Bits.INCLUDE | Bits.START);
     }
 
-    /** Get the last timestamp (maximum) of the measurement.  @return the long */
+    /**
+     * Get the last timestamp (maximum) of the measurement.  @return the long
+     */
     public long theEnd() {
       final int totalTimes = Position.get();
 
       return Ranges[totalTimes - 1];
     }
 
-    /** Get total time of measurement.  @return the long */
+    /**
+     * Get total time of measurement.  @return the long
+     */
     public long total() {
       return theEnd() - Start;
     }
@@ -763,7 +927,7 @@ public final class Meter {
     /**
      * Add int.
      *
-     * @param time  the time
+     * @param time the time
      * @param flags the flags
      * @return the int
      */
@@ -883,30 +1047,46 @@ public final class Meter {
     }
   }
 
-  /** Loops iterations tracking. */
+  /**
+   * Loops iterations tracking.
+   */
   private final static class Loop {
-    /** Timestamp's of each iteration. */
+    /**
+     * Timestamp's of each iteration.
+     */
     public final long[] Iterations;
-    /** Flags storage for each time stamp. */
+    /**
+     * Flags storage for each time stamp.
+     */
     public final long[] Flags;
-    /** Index of first element in Iterations array. */
+    /**
+     * Index of first element in Iterations array.
+     */
     public int Position;
-    /** Quantity of stored iterations. */
+    /**
+     * Quantity of stored iterations.
+     */
     public int Counter;
-    /** Total number of captured iterations. */
+    /**
+     * Total number of captured iterations.
+     */
     public int TotalCaptured;
-    /** <code>true</code> indicates endless loop tracking, otherwise number of iterations is known. */
+    /**
+     * <code>true</code> indicates endless loop tracking, otherwise number of iterations is known.
+     */
     @SuppressWarnings("unused")
     public final boolean IsEndless;
-    /** Start time of the loop statistics . */
+    /**
+     * Start time of the loop statistics .
+     */
     public final long Start;
 
     /**
      * Create class with preallocated space for timestamp's on each iteration.
      *
-     * @param time    the time
+     * @param time the time
      * @param maxSize Number of expected iterations. If less than zero - class switch own mode to endless loops
-     *                tracking.
+     * tracking.
      */
     public Loop(final long time, final int maxSize) {
       final int size = Math.abs(maxSize);
@@ -920,7 +1100,7 @@ public final class Meter {
     /**
      * Add time stamp of a new iteration.
      *
-     * @param time  time stamp.
+     * @param time time stamp.
      * @param flags time stamp flags.
      * @return index of iteration.
      */
@@ -987,7 +1167,9 @@ public final class Meter {
     }
   }
 
-  /** Statistics step. */
+  /**
+   * Statistics step.
+   */
   private final static class Step {
     /** Compare steps by cost of execution. {@link #Total} */
     public final static Comparator<Step> Comparator = new Comparator<Step>() {
@@ -1011,33 +1193,53 @@ public final class Meter {
       }
     };
 
-    /** Is Step contains skipped data or not. */
+    /**
+     * Is Step contains skipped data or not.
+     */
     public final boolean IsSkipped;
-    /** How much time to skip. Steps may exclude cost of methods call captured by calibration. */
+    /**
+     * How much time to skip. Steps may exclude cost of methods call captured by calibration.
+     */
     public final long Skipped;
-    /** Step start time. */
+    /**
+     * Step start time.
+     */
     public final long Start;
-    /** Step total time. */
+    /**
+     * Step total time.
+     */
     public final long Total;
-    /** Accumulated total time. */
+    /**
+     * Accumulated total time.
+     */
     public final long AccumulatedTotal;
-    /** Cost of step in percents. */
+    /**
+     * Cost of step in percents.
+     */
     public final double CostPercents;
-    /** Time grid row. */
+    /**
+     * Time grid row.
+     */
     public final long[] Times;
-    /** Format string for output. */
+    /**
+     * Format string for output.
+     */
     public final String Format;
-    /** Log message. */
+    /**
+     * Log message.
+     */
     public final String Log;
-    /** reference on configuration. */
+    /**
+     * reference on configuration.
+     */
     private final Config mConfig;
 
     /**
      * Instantiates a new statistics Step.
      *
      * @param config current configuration
-     * @param m      current measure instance
-     * @param index  the step index
+     * @param m current measure instance
+     * @param index the step index
      */
     public Step(final Config config, final Measure m, final int index) {
       mConfig = config;
@@ -1063,11 +1265,13 @@ public final class Meter {
       Log = m.log(index);
     }
 
-    /** Convert all statistics data to collection of parameters for string format.  @return the list */
+    /**
+     * Convert all statistics data to collection of parameters for string format.  @return the list
+     */
     public List<Object> toParams() {
       final List<Object> params = (mConfig.ShowStepsGrid) ?
           Meter.toParams(Times) :
-          new ArrayList<Object>(PREALLOCATE);
+          new ArrayList<>(PREALLOCATE);
 
       if (mConfig.ShowStepCostPercents) {
         params.add(CostPercents);
@@ -1088,7 +1292,9 @@ public final class Meter {
       return params;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
       return String.format(Locale.US, Format, toParams().toArray());

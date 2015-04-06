@@ -687,6 +687,35 @@ public class MeterTests {
     assertTrue("Expected 100.0% formatting.", result.contains(" 100.0% "));
   }
 
+  @Test
+  public void test_15_CompareSteps() throws Exception {
+    final Meter meter = Meter.getInstance();
+    meter.setOutput(mOutput);
+
+    meter.start("→ Comparison test"); // #0
+
+    // step #1
+    SystemClock.sleep(150);
+    meter.beat("150ms sleep step");
+
+    // step #2
+    SystemClock.sleep(250);
+    meter.beat("250 sleep step");
+
+    // step #3
+    SystemClock.sleep(150);
+    meter.end("← Comparison test");
+
+    final int resultLess = meter.compare(1, 2, Meter.Nanos.ONE_MILLIS);
+    assertEquals(Meter.Nanos.COMPARE_LESS, resultLess);
+
+    final int resultGreater = meter.compare(2, 1, Meter.Nanos.ONE_MILLIS);
+    assertEquals(Meter.Nanos.COMPARE_GREATER, resultGreater);
+
+    final int resultEquals = meter.compare(1, 2, Meter.Nanos.ONE_SECOND);
+    assertEquals(Meter.Nanos.COMPARE_EQUAL, resultEquals);
+  }
+
   /* [ NESTED DECLARATIONS ] ======================================================================================= */
 
   public class DummyPojo {

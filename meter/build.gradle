@@ -300,11 +300,17 @@ install {
 }
 
 task sourcesJar(type: Jar) {
+    description = 'Compose sources archive'
+    group = 'publishing'
+
     from android.sourceSets.main.java.srcDirs
     classifier = 'sources'
 }
 
-task javadoc(type: Javadoc) {
+task generateJavadoc(type: Javadoc) {
+    description = 'Generate JavaDoc from sources'
+    group = 'publishing'
+
     source = android.sourceSets.main.java.srcDirs
     //classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
     exclude '**/R.html', '**/R.*.html', '**/index.html'
@@ -315,9 +321,12 @@ task javadoc(type: Javadoc) {
     }
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
+task javadocJar(type: Jar, dependsOn: generateJavadoc) {
+    description = 'Compose JavaDoc archive'
+    group = 'publishing'
+
     classifier = 'javadoc'
-    from javadoc.destinationDir
+    from generateJavadoc.destinationDir
 }
 
 artifacts {
