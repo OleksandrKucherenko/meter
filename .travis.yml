@@ -73,8 +73,8 @@ android:
     - extra-android-support
     - extra-android-m2repository
     - extra-google-m2repository
-    - build-tools-21.1.2
-    - android-21
+    - build-tools-22.0.1
+    - android-22
     # For emulator running we need to install at least one system image: API 21 == [x86, ARM] * [System, Google]
     #- sys-img-x86-android-21
     #- sys-img-armeabi-v7a-android-21
@@ -113,6 +113,7 @@ script:
   - ./gradlew test
   # cleanup a little for better caching reuse
   - rm $HOME/.gradle/daemon/2.2.1/*.*
+  - rm $HOME/.gradle/caches/modules-2/modules-2.lock
 
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
