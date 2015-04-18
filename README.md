@@ -23,7 +23,9 @@ By using it you can easily benchmark critical components of own Android Projects
 
 ```groovy
 repositories {
-    jcenter()
+    maven {
+        url  "http://dl.bintray.com/kucherenko-alex/android" 
+    }
 }
 
 dependencies {
