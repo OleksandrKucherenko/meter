@@ -106,6 +106,49 @@ V/meter-tests﹕ ---------------------------------------------------------------
 D/meter-tests﹕ TearDown - test_00_Meter
 ```
 
+## jUnit Tests, results to STDOUT
+
+```java
+public class MeterTests {
+  /* [ INJECTIONS ] ================================================================================================ */
+  @Rule
+  public TestName mTestName = new TestName();
+
+  /* [ MEMBERS ] =================================================================================================== */
+
+  private Meter.Output mOutput;
+
+  @Before
+  public void setUp() {
+    mOutput = new Meter.Output() {
+      private StringBuilder mLog = new StringBuilder(64 * 1024).append("\r\n");
+
+      @Override
+      public void log(final Level level, final String tag, final String msg) {
+        mLog.append(level.toString().charAt(0)).append(" : ")
+            .append(tag).append(" : ")
+            .append(msg).append("\r\n");
+      }
+
+      @Override
+      public String toString() {
+        return mLog.toString();
+      }
+    };
+
+    mOutput.log(Level.INFO, "→", mTestName.getMethodName());
+    
+    // say meter to redirect all logs to STDOUT
+    Meter.getInstance().setOutput(mOutput);
+  }
+
+  @After
+  public void tearDown() {
+    mOutput.log(Level.INFO, "←", mTestName.getMethodName());
+    System.out.append(mOutput.toString());
+  }
+}
+```
 
 ## Output Filtering
 
