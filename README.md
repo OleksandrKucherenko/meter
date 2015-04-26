@@ -30,7 +30,7 @@ repositories {
 
 dependencies {
     // ALTERNATIVE: 
-    //   compile(group: 'com.artfulbits', name: 'meter', version: '1.0.1.141', ext: 'aar')
+    //   compile(group: 'com.artfulbits', name: 'meter', version: '1.0.1.164', ext: 'aar')
     compile 'com.artfulbits:meter:+@aar'
 }
 ```
