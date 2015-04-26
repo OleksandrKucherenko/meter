@@ -35,6 +35,16 @@ dependencies {
 }
 ```
 
+# Changes Log
+
+v1.0.1.164
+
+* ADD: compare of tracked steps by Total value with custom accuracy
+* ADD: JAR binray generated for Maven repository. 
+Hope it will resolve issues with library attaching to projects.
+
+[Changes Log](_documentation/changes.md)
+
 # Advanced topics
 
 [Accuracy of Measurements](_documentation/accuracy.md)
