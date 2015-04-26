@@ -11,6 +11,7 @@ import android.util.SparseArray;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -430,7 +431,7 @@ public final class Meter {
   public void stats(final Output log) {
     final Config config = getConfig();
     final int totalSteps = mCurrent.Position.get();
-    final List<Step> steps = new ArrayList<>(totalSteps);
+    final List<Step> steps = mCurrent.ReportSteps;
     long totalSkipped = 0;
 
     Step subStep;
@@ -511,7 +512,32 @@ public final class Meter {
    * com.artfulbits.benchmark.Meter.Nanos#COMPARE_GREATER}, {@link com.artfulbits.benchmark.Meter.Nanos#COMPARE_LESS}.
    */
   public int compare(final int[] left, final int[] right, final long accuracy) {
-    return 0;
+    // statistics is not calculated yet
+    if (mCurrent.ReportSteps.isEmpty()) {
+      // call for making ReportSteps collection filled
+      stats(new Output() {
+        @Override
+        public void log(Level level, String tag, String msg) {
+        /* log nothing */
+        }
+      });
+    }
+
+    Arrays.sort(left);
+    Arrays.sort(right);
+    long leftTotal = 0, rightTotal = 0;
+
+    int counter = 0;
+    for (final Step s : mCurrent.ReportSteps) {
+      leftTotal += (Arrays.binarySearch(left, counter) < 0) ? 0 : s.Total;
+      rightTotal += (Arrays.binarySearch(right, counter) < 0) ? 0 : s.Total;
+
+      counter++;
+    }
+
+    final Long l = (leftTotal - (leftTotal % accuracy));
+    final Long r = (rightTotal - (rightTotal % accuracy));
+    return l.compareTo(r);
   }
 
   /* [ UTILITIES ] =============================================================================================== */
@@ -887,6 +913,8 @@ public final class Meter {
      * Reference on parent class instance.
      */
     public final Meter Parent;
+    /** Calculated report steps. Collection filled by results in the moment of {@link #stats(Output)} call. */
+    public final List<Step> ReportSteps = new ArrayList<>();
 
 		/* [ CONSTRUCTOR ] ============================================================================================ */
 

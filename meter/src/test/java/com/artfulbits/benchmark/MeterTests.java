@@ -4,13 +4,8 @@ import android.os.SystemClock;
 
 import com.artfulbits.benchmark.junit.Sampling;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.*;
+import org.junit.rules.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -20,16 +15,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasItemInArray;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /**
  * jUnit tests for Meter class.
@@ -695,16 +682,19 @@ public class MeterTests {
     meter.start("→ Comparison test"); // #0
 
     // step #1
-    SystemClock.sleep(150);
+    Thread.sleep(150);
     meter.beat("150ms sleep step");
 
     // step #2
-    SystemClock.sleep(250);
-    meter.beat("250 sleep step");
+    Thread.sleep(250);
+    meter.beat("250ms sleep step");
 
     // step #3
-    SystemClock.sleep(150);
+    Thread.sleep(150);
     meter.end("← Comparison test");
+
+    // publish results
+    meter.stats(mOutput);
 
     final int resultLess = meter.compare(1, 2, Meter.Nanos.ONE_MILLIS);
     assertEquals(Meter.Nanos.COMPARE_LESS, resultLess);
