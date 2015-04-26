@@ -116,7 +116,13 @@ android {
   sourceSets {
     test {
       // include library sources into tests
-      java.srcDirs = ['src/test/java', 'src/main/java']
+      java.srcDirs android.sourceSets.main.java.srcDirs
+
+      // exclude all files from compilation in case of disabled testing. 
+      // 'test' configuration is still exists in this case
+      if (!useTesting) {
+        java.excludes '**/*.java'
+      }
     }
     
     debug.setRoot('build-types/debug')
