@@ -15,6 +15,10 @@ jdk:
     #- oraclejdk7
     - oraclejdk8
 
+# ask travis to doanload all revisions, our build version depends on this
+git:
+  depth: 10000
+  
 env:
   global:
     # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
