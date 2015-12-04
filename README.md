@@ -3,7 +3,7 @@
 
 [![Build Status](https://secure.travis-ci.org/OleksandrKucherenko/meter.png?branch=master)](https://travis-ci.org/OleksandrKucherenko/meter) [![Coverage Status](https://coveralls.io/repos/OleksandrKucherenko/meter/badge.svg?branch=master)](https://coveralls.io/r/OleksandrKucherenko/meter?branch=master) [![Coverity Scan Build Status](https://scan.coverity.com/projects/3248/badge.svg)](https://scan.coverity.com/projects/3248)
 
-[![Download](https://api.bintray.com/packages/kucherenko-alex/android/com.artfulbits%3Ameter/images/download.svg) ](https://bintray.com/kucherenko-alex/android/com.artfulbits%3Ameter/_latestVersion) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Meter-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/1787)  [![Methods Count](https://img.shields.io/badge/Methods%20and%20size-139%20%7C%2020%20KB-e91e63.svg")](http://www.methodscount.com/?lib=com.artfulbits%3Ameter%3A%2B)
+[![Download](https://api.bintray.com/packages/kucherenko-alex/android/com.artfulbits%3Ameter/images/download.svg) ](https://bintray.com/kucherenko-alex/android/com.artfulbits%3Ameter/_latestVersion) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Meter-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/1787)  [![Methods Count](https://img.shields.io/badge/Methods%20and%20size-139%20%7C%2020%20KB-e91e63.svg)](http://www.methodscount.com/?lib=com.artfulbits%3Ameter%3A%2B)
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/OleksandrKucherenko/meter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) 
 
