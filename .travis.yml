@@ -117,6 +117,8 @@ script:
   - ./gradlew test
   # cleanup a little for better caching reuse
   - rm $HOME/.gradle/daemon/2.2.1/*.*
+  - rm $HOME/.gradle/daemon/2.7/*.*
+  - rm $HOME/.gradle/daemon/2.9/*.*
   - rm $HOME/.gradle/caches/modules-2/modules-2.lock
 
 after_success:
