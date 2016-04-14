@@ -116,10 +116,8 @@ script:
   #- ./gradlew build connectedCheck --info
   - ./gradlew test
   # cleanup a little for better caching reuse
-  - rm $HOME/.gradle/daemon/2.2.1/*.*
-  - rm $HOME/.gradle/daemon/2.7/*.*
-  - rm $HOME/.gradle/daemon/2.9/*.*
-  - rm $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -rf $HOME/.gradle/daemon/**/*.*
+  - rm -rf $HOME/.gradle/caches/modules-2/modules-2.lock
 
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
@@ -127,6 +125,7 @@ after_success:
   #- ls -R
   ############# coverage report
   - ./gradlew :meter:coveralls
+  - bash <(curl -s https://codecov.io/bash)  
 
 notifications:
   email: false
