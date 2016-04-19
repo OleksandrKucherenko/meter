@@ -58,8 +58,8 @@ addons:
       name: "OleksandrKucherenko/meter"
       description: "Micro-benchmarking tool for Android projects."
     notification_email: $EMAIL
-    build_command_prepend: "./gradlew clean --no-color"
-    build_command: "./gradlew assembleDebug --no-color"
+    build_command_prepend: "./gradlew clean --console=plain"
+    build_command: "./gradlew assembleDebug --console=plain"
     branch_pattern: master
 
 before_install:
@@ -77,14 +77,12 @@ before_install:
 # For a full list, run `android list sdk -a --extended`
 android:
   components:
-    #- build-tools-19.1.0
-    #- android-19
     - platform-tools
+    - build-tools-23.0.3
+    - android-23
     - extra-android-support
     - extra-android-m2repository
     - extra-google-m2repository
-    - build-tools-23.0.3
-    - android-23
     # For emulator running we need to install at least one system image: API 21 == [x86, ARM] * [System, Google]
     #- sys-img-x86-android-21
     #- sys-img-armeabi-v7a-android-21
@@ -120,14 +118,14 @@ script:
   # second run will be fast!
   #- travis_retry ./gradlew build connectedCheck --info
   #- ./gradlew build connectedCheck --info
-  - ./gradlew test
+  - ./gradlew test --console=plain
 
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
   ############# dump structure of the project
   #- ls -R
   ############# coverage report
-  - ./gradlew :meter:coveralls
+  - ./gradlew :meter:coveralls --console=plain
   - bash <(curl -s https://codecov.io/bash)
 
 notifications:
