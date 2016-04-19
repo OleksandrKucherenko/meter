@@ -18,7 +18,7 @@ jdk:
 # ask travis to doanload all revisions, our build version depends on this
 git:
   depth: 10000
-  
+
 env:
   global:
     # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
@@ -39,11 +39,17 @@ env:
     #- ANDROID_TARGET='Google Inc.:Google APIs (x86 System Image):19' ANDROID_ABI=x86  AVD_NAME='test-google19-x86'
 
 # http://docs.travis-ci.com/user/caching/
+before_cache:
+  # cleanup a little for better caching reuse
+  - rm -rf $HOME/.gradle/daemon/
+  - rm -rf $HOME/.gradle/caches/modules-2/modules-2.lock
+
 cache:
   gradlew: true
   gradle: true
   directories:
-    - $HOME/.gradle
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
     - $HOME/.m2
 
 addons:
@@ -77,8 +83,8 @@ android:
     - extra-android-support
     - extra-android-m2repository
     - extra-google-m2repository
-    - build-tools-22.0.1
-    - android-22
+    - build-tools-23.0.3
+    - android-23
     # For emulator running we need to install at least one system image: API 21 == [x86, ARM] * [System, Google]
     #- sys-img-x86-android-21
     #- sys-img-armeabi-v7a-android-21
@@ -115,9 +121,6 @@ script:
   #- travis_retry ./gradlew build connectedCheck --info
   #- ./gradlew build connectedCheck --info
   - ./gradlew test
-  # cleanup a little for better caching reuse
-  - rm -rf $HOME/.gradle/daemon/**/*.*
-  - rm -rf $HOME/.gradle/caches/modules-2/modules-2.lock
 
 after_success:
   # - ./gradlew :samples:sample-01:coveralls
@@ -125,7 +128,7 @@ after_success:
   #- ls -R
   ############# coverage report
   - ./gradlew :meter:coveralls
-  - bash <(curl -s https://codecov.io/bash)  
+  - bash <(curl -s https://codecov.io/bash)
 
 notifications:
   email: false
