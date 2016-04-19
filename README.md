@@ -1,11 +1,11 @@
 
-# State 
+# State
 
-[![Build Status](https://secure.travis-ci.org/OleksandrKucherenko/meter.png?branch=master)](https://travis-ci.org/OleksandrKucherenko/meter) [![Coverage Status](https://coveralls.io/repos/OleksandrKucherenko/meter/badge.svg?branch=master)](https://coveralls.io/r/OleksandrKucherenko/meter?branch=master) [![Coverity Scan Build Status](https://scan.coverity.com/projects/3248/badge.svg)](https://scan.coverity.com/projects/3248)
+[![Build Status](https://secure.travis-ci.org/OleksandrKucherenko/meter.png?branch=master)](https://travis-ci.org/OleksandrKucherenko/meter) [![Coverage Status](https://coveralls.io/repos/OleksandrKucherenko/meter/badge.svg?branch=master)](https://coveralls.io/r/OleksandrKucherenko/meter?branch=master)  [![codecov.io](https://codecov.io/github/OleksandrKucherenko/meter/coverage.svg?branch=master)](https://codecov.io/github/OleksandrKucherenko/meter?branch=master)[![Coverity Scan Build Status](https://scan.coverity.com/projects/3248/badge.svg)](https://scan.coverity.com/projects/3248)
 
 [![Download](https://api.bintray.com/packages/kucherenko-alex/android/com.artfulbits%3Ameter/images/download.svg) ](https://bintray.com/kucherenko-alex/android/com.artfulbits%3Ameter/_latestVersion) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-Meter-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/1787)  [![Methods Count](https://img.shields.io/badge/Methods%20and%20size-139%20%7C%2020%20KB-e91e63.svg)](http://www.methodscount.com/?lib=com.artfulbits%3Ameter%3A%2B)
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/OleksandrKucherenko/meter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge) 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/OleksandrKucherenko/meter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Active development, started at: 2014-07-13
 
@@ -30,12 +30,12 @@ By using it you can easily benchmark critical components of own Android Projects
 ```groovy
 repositories {
     maven {
-        url  "http://dl.bintray.com/kucherenko-alex/android" 
+        url  "http://dl.bintray.com/kucherenko-alex/android"
     }
 }
 
 dependencies {
-    // ALTERNATIVE: 
+    // ALTERNATIVE:
     //   compile(group: 'com.artfulbits', name: 'meter', version: '1.0.1.164', ext: 'aar')
     compile 'com.artfulbits:meter:+@aar'
 }
@@ -46,7 +46,7 @@ dependencies {
 v1.0.1.164
 
 * ADD: compare of tracked steps by Total value with custom accuracy
-* ADD: JAR binray generated for Maven repository. 
+* ADD: JAR binray generated for Maven repository.
 Hope it will resolve issues with library attaching to projects.
 
 [Changes Log](_documentation/changes.md)
