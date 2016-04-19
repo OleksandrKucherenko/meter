@@ -7,6 +7,7 @@ buildscript {
         //        mavenCentral()
         /* ATTACH CUSTOM BUILDS OF GRADLE PLUGINS FROM '~/gradle/plugins' folder */
         //        flatDir { dirs rootProject.projectDir.toString() + '/gradle/plugins' }
+        maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
         /* Android Build Plugin */
@@ -16,7 +17,8 @@ buildscript {
         /* bintray.com: https://github.com/bintray/gradle-bintray-plugin */
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:+'
         /* Allows project artifacts to be deployed to a Maven repository, or installed to the local Maven cache. */
-        classpath 'com.github.dcendents:android-maven-plugin:+'
+        //classpath 'com.github.dcendents:android-maven-plugin:+'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:+'
     }
 }
 
