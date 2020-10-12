@@ -65,7 +65,7 @@ dependencies {
                 'com.google.dexmaker:dexmaker-mockito:+'
 
         /* jUnit (v4.12) */
-        androidTestCompile('junit:junit:4.12') { exclude group: 'org.hamcrest' }
+        androidTestCompile('junit:junit:4.13.1') { exclude group: 'org.hamcrest' }
 
         /* JVM Tests ------------------------------------------------------------------------------------------------ */
         testCompile 'org.hamcrest:hamcrest-integration:+',
