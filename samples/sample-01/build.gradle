@@ -82,7 +82,7 @@ dependencies {
 //        androidTestCompile 'com.squareup.assertj:assertj-android-support-v4:+'
 
         /* jUnit (v4.12) */
-        androidTestCompile('junit:junit:4.12') { exclude group: 'org.hamcrest' }
+        androidTestCompile('junit:junit:4.13.2') { exclude group: 'org.hamcrest' }
 
         // Espresso include 'junit:junit-dep' package which is a earlier version of the jUnit v4.12
         if (useEspresso) {
