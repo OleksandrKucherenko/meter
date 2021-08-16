@@ -17,7 +17,7 @@ jdk:
 
 # ask travis to doanload all revisions, our build version depends on this
 git:
-  depth: 10000
+  depth: 3
 
 env:
   global:
